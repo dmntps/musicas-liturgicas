@@ -1058,14 +1058,22 @@ function setupAuthEvents() {
     });
   }
 
-  // 1. Acesso com Google (1 Toque - Válido para Login ou Cadastro)
+  // 1. Acesso com Google (Autenticação / Cadastro com Dados Reais)
   if (dom.btnGoogleAuth) {
     dom.btnGoogleAuth.addEventListener("click", () => {
       const isRegister = (appState.authMode === "register");
+      const userEmail = prompt("Informe o seu e-mail do Google para continuar:", "");
+      if (!userEmail || !userEmail.includes("@")) {
+        alert("É necessário informar um e-mail válido para acessar.");
+        return;
+      }
+      const userName = prompt("Qual o seu nome completo?", "") || userEmail.split("@")[0];
+      const userPhone = prompt("Informe seu WhatsApp/Celular com DDD (para recuperação de conta):", "") || "(Não informado)";
+
       loginSuccess({
-        name: "Diogo Nunes",
-        email: "diogo.nunes@gmail.com",
-        phone: "(11) 98765-4321", // Garante celular e e-mail vinculados para recuperação
+        name: userName.trim(),
+        email: userEmail.trim().toLowerCase(),
+        phone: userPhone.trim(),
         method: isRegister ? "Google (Cadastro)" : "Google (Login)",
         role: "Músico / Animador Litúrgico"
       });
@@ -1076,17 +1084,46 @@ function setupAuthEvents() {
   if (dom.formAuthEmail) {
     dom.formAuthEmail.addEventListener("submit", (e) => {
       e.preventDefault();
-      const email = dom.authInputEmail.value.trim() || "diogo.musica@paroquia.com";
-      const namePart = email.split("@")[0].replace(".", " ");
-      const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+      const email = dom.authInputEmail ? dom.authInputEmail.value.trim() : "";
+      const pass = dom.authInputPassword ? dom.authInputPassword.value.trim() : "";
 
-      loginSuccess({
-        name: formattedName,
-        email: email,
-        phone: "(11) 98765-4321",
-        method: "E-mail (Login)",
-        role: "Músico Litúrgico"
-      });
+      if (!email || !email.includes("@")) {
+        alert("Por favor, digite um e-mail válido.");
+        return;
+      }
+      if (!pass || pass.length < 4) {
+        alert("Por favor, digite sua senha de acesso.");
+        return;
+      }
+
+      // Procura se o usuário já tem cadastro no aparelho
+      const localUsers = JSON.parse(localStorage.getItem("liturgia_registered_users") || "{}");
+      const existingUser = localUsers[email.toLowerCase()];
+
+      if (existingUser) {
+        if (existingUser.password && existingUser.password !== pass) {
+          alert("Senha incorreta. Verifique sua senha ou clique em 'Esqueceu a senha?'.");
+          return;
+        }
+        loginSuccess({
+          name: existingUser.name,
+          email: existingUser.email,
+          phone: existingUser.phone,
+          method: "E-mail (Login)",
+          role: "Músico Litúrgico"
+        });
+      } else {
+        // Se ainda não cadastrou neste aparelho, extrai o nome e avisa
+        const namePart = email.split("@")[0].replace(/[._-]/g, " ");
+        const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+        loginSuccess({
+          name: formattedName,
+          email: email,
+          phone: "(Cadastrado por Login)",
+          method: "E-mail (Login Direto)",
+          role: "Músico Litúrgico"
+        });
+      }
     });
   }
 
@@ -1094,40 +1131,72 @@ function setupAuthEvents() {
   if (dom.formAuthPhone) {
     dom.formAuthPhone.addEventListener("submit", (e) => {
       e.preventDefault();
-      const phone = dom.authInputPhone.value.trim() || "(11) 98765-4321";
+      const phone = dom.authInputPhone ? dom.authInputPhone.value.trim() : "";
+      if (!phone || phone.length < 8) {
+        alert("Por favor, informe seu celular com DDD.");
+        return;
+      }
+
+      const inputName = prompt("Informe seu nome completo para concluir o acesso:", "") || `Músico (${phone})`;
       loginSuccess({
-        name: `Músico (${phone})`,
-        email: "diogo.musica@paroquia.com",
+        name: inputName.trim(),
+        email: "(Acesso via Celular)",
         phone: phone,
-        method: "SMS (Login)",
+        method: "Celular/SMS (Login)",
         role: "Músico Litúrgico"
       });
     });
   }
 
-  // 4. Formulário Unificado de Cadastro (Exige Nome, E-mail e Celular para Recuperação)
+  // 4. Formulário Unificado de Cadastro (Exige Nome, E-mail, Celular e Senha Reais)
   if (dom.formAuthRegister) {
     dom.formAuthRegister.addEventListener("submit", (e) => {
       e.preventDefault();
-      const name = (dom.registerName && dom.registerName.value.trim()) || "Diogo Nunes";
-      const email = (dom.registerEmail && dom.registerEmail.value.trim()) || "diogo.musica@paroquia.com";
-      const phone = (dom.registerPhone && dom.registerPhone.value.trim()) || "(11) 98765-4321";
-      const pass = (dom.registerPassword && dom.registerPassword.value.trim()) || "";
-      const confirmPass = (dom.registerConfirmPassword && dom.registerConfirmPassword.value.trim()) || "";
+      const name = dom.registerName ? dom.registerName.value.trim() : "";
+      const email = dom.registerEmail ? dom.registerEmail.value.trim() : "";
+      const phone = dom.registerPhone ? dom.registerPhone.value.trim() : "";
+      const pass = dom.registerPassword ? dom.registerPassword.value.trim() : "";
+      const confirmPass = dom.registerConfirmPassword ? dom.registerConfirmPassword.value.trim() : "";
 
-      if (pass && confirmPass && pass !== confirmPass) {
-        alert("As senhas informadas não conferem. Por favor, digite novamente.");
+      if (!name || name.length < 3) {
+        alert("Por favor, preencha seu nome completo.");
         return;
       }
+      if (!email || !email.includes("@")) {
+        alert("Por favor, informe um e-mail válido.");
+        return;
+      }
+      if (!phone || phone.length < 8) {
+        alert("Por favor, informe um telefone/WhatsApp válido para contato e recuperação de conta.");
+        return;
+      }
+      if (!pass || pass.length < 6) {
+        alert("A senha deve ter no mínimo 6 caracteres.");
+        return;
+      }
+      if (pass !== confirmPass) {
+        alert("As senhas digitadas não conferem. Por favor, confirme a mesma senha.");
+        return;
+      }
+
+      // Salva o cadastro localmente no aparelho para login futuro
+      const localUsers = JSON.parse(localStorage.getItem("liturgia_registered_users") || "{}");
+      localUsers[email.toLowerCase()] = {
+        name: name,
+        email: email,
+        phone: phone,
+        password: pass
+      };
+      localStorage.setItem("liturgia_registered_users", JSON.stringify(localUsers));
 
       loginSuccess({
         name: name,
         email: email,
         phone: phone,
-        method: "Cadastro com Recuperação Vinculada",
+        method: "Criar Conta Gratuita",
         role: "Músico Litúrgico"
       });
-      showToast("✅ Conta criada com sucesso! E-mail e Celular vinculados.");
+      showToast("✅ Conta criada com sucesso! Seja bem-vindo.");
     });
   }
 
