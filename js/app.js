@@ -1612,7 +1612,32 @@ function setupAudioStudioEvents() {
   }
 }
 
-function loginSuccess(user) {
+// URL do Webhook do Google Sheets para Registro de Usuários
+const GOOGLE_SHEETS_USERS_WEBHOOK = "https://script.google.com/macros/s/AKfycbz4Gs_ByQL7OWJl9IG2tEeeajt9Vz3AxbJNsVpfUbuHHfnHiUoWVQthKZVIIxoRViso_w/exec";
+
+function syncUserToGoogleSheets(user) {
+  if (!GOOGLE_SHEETS_USERS_WEBHOOK || !user) return;
+  try {
+    fetch(GOOGLE_SHEETS_USERS_WEBHOOK, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        name: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        method: user.method || "Acesso Direto"
+      })
+    }).then(res => res.json()).then(data => {
+      console.log("Usuário registrado no Google Sheets:", data);
+    }).catch(err => {
+      console.warn("Nota: registro em segundo plano no Google Sheets:", err);
+    });
+  } catch (e) {
+    console.warn("Erro ao sincronizar com Google Sheets:", e);
+  }
+}
+
+function loginSuccess(user, shouldSync = true) {
   appState.isAuthenticated = true;
   appState.currentUser = user;
   localStorage.setItem("liturgia_user_session", JSON.stringify(user));
@@ -1622,6 +1647,11 @@ function loginSuccess(user) {
   }
   if (dom.userDisplayNameMasses) {
     dom.userDisplayNameMasses.innerText = `${user.name}`;
+  }
+
+  // Registra silenciosamente na sua planilha do Google Drive
+  if (shouldSync) {
+    syncUserToGoogleSheets(user);
   }
 
   openMassesScreen();
@@ -1665,7 +1695,7 @@ function initApp() {
   if (savedSession) {
     try {
       const user = JSON.parse(savedSession);
-      loginSuccess(user);
+      loginSuccess(user, false);
     } catch(e) {
       logoutUser();
     }
