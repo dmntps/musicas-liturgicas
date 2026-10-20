@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Músicas Litúrgicas</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Google Fonts: Inter para interface moderna e JetBrains Mono para cifras alinhadas -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-shell">
+    
+    <!-- TELA 0: AUTENTICAÇÃO OBRIGATÓRIA (TELA INICIAL DE LOGIN & ACESSO) -->
+    <div id="authScreen" class="screen-container auth-screen-active">
+      <div class="auth-wrapper">
+        
+        <!-- Identidade Visual & Boas-Vindas -->
+        <div class="auth-brand">
+          <div class="auth-cross-badge">
+            <span class="auth-cross-icon">✝</span>
+          </div>
+          <h1 class="auth-title">Músicas Litúrgicas</h1>
+          <p class="auth-subtitle">Cifras, Roteiros e Ritos da Santa Missa</p>
+          <div class="auth-tag-bulletin">
+            <span class="bulletin-dot"></span>
+            <span>Boletim Oficial: <strong>Igreja em Oração</strong></span>
+          </div>
+        </div>
+
+        <!-- Card de Autenticação -->
+        <div class="auth-card">
+          
+          <!-- Seletor de Modo: Entrar vs Criar Conta Gratuita -->
+          <div class="auth-mode-switch">
+            <button type="button" class="mode-switch-btn active" id="btnModeLogin">
+              <span>Entrar</span>
+            </button>
+            <button type="button" class="mode-switch-btn" id="btnModeRegister">
+              <span>Criar Conta Grátis</span>
+            </button>
+          </div>
+
+          <!-- Botão Principal: Login/Cadastro com Google com 1 Toque -->
+          <button type="button" class="btn-auth-google" id="btnGoogleAuth">
+            <svg class="google-icon" viewBox="0 0 24 24" width="22" height="22">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span id="googleAuthText">Continuar com o Google</span>
+          </button>
+
+          <!-- Divisor -->
+          <div class="auth-divider">
+            <span id="authDividerText">ou acesse por credencial</span>
+          </div>
+
+          <!-- Abas de Método no Modo Entrar: E-mail vs Celular/SMS -->
+          <div class="auth-tabs" id="authLoginTabs">
+            <button type="button" class="auth-tab-btn active" id="tabMethodEmail">
+              <span>✉️ E-mail</span>
+            </button>
+            <button type="button" class="auth-tab-btn" id="tabMethodPhone">
+              <span>📱 Celular / SMS</span>
+            </button>
+          </div>
+
+          <!-- PAINEL 1: LOGIN POR E-MAIL & SENHA -->
+          <form id="formAuthEmail" class="auth-form" onsubmit="event.preventDefault();">
+            <div class="auth-input-group">
+              <label for="authInputEmail">Seu E-mail</label>
+              <div class="input-with-icon">
+                <span class="field-icon">📧</span>
+                <input type="email" id="authInputEmail" placeholder="exemplo@gmail.com" value="diogo.musica@paroquia.com" required>
+              </div>
+            </div>
+
+            <div class="auth-input-group">
+              <div class="label-row">
+                <label for="authInputPassword">Senha</label>
+                <a href="#" class="forgot-link" id="linkForgotPassword">Esqueceu a senha?</a>
+              </div>
+              <div class="input-with-icon">
+                <span class="field-icon">🔒</span>
+                <input type="password" id="authInputPassword" placeholder="Digite sua senha" value="••••••••" required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-auth-submit" id="btnSubmitEmailAuth">
+              <span>Entrar no Repertório</span>
+              <span class="btn-arrow">→</span>
+            </button>
+          </form>
+
+          <!-- PAINEL 2: LOGIN POR CELULAR / SMS -->
+          <form id="formAuthPhone" class="auth-form hidden" onsubmit="event.preventDefault();">
+            <div class="auth-input-group">
+              <label for="authInputPhone">Número de Celular (com DDD)</label>
+              <div class="input-with-icon">
+                <span class="field-icon">🇧🇷</span>
+                <input type="tel" id="authInputPhone" placeholder="(11) 98765-4321">
+              </div>
+              <span class="input-hint">Enviaremos um código SMS ou WhatsApp com 6 dígitos.</span>
+            </div>
+
+            <button type="submit" class="btn-auth-submit btn-phone" id="btnSubmitPhoneAuth">
+              <span>Enviar Código por SMS / WhatsApp</span>
+              <span class="btn-arrow">📲</span>
+            </button>
+          </form>
+
+          <!-- PAINEL 3: CRIAR CONTA GRÁTIS (Exige Nome, E-mail e Celular para Recuperação) -->
+          <form id="formAuthRegister" class="auth-form hidden" onsubmit="event.preventDefault();">
+            <div class="auth-input-group">
+              <label for="registerName">Nome Completo</label>
+              <div class="input-with-icon">
+                <span class="field-icon">👤</span>
+                <input type="text" id="registerName" placeholder="Ex: Diogo Nunes" required>
+              </div>
+            </div>
+
+            <div class="auth-input-group">
+              <label for="registerEmail">Seu E-mail</label>
+              <div class="input-with-icon">
+                <span class="field-icon">📧</span>
+                <input type="email" id="registerEmail" placeholder="seuemail@exemplo.com" required>
+              </div>
+            </div>
+
+            <div class="auth-input-group">
+              <label for="registerPhone">Celular / WhatsApp (com DDD)</label>
+              <div class="input-with-icon">
+                <span class="field-icon">📱</span>
+                <input type="tel" id="registerPhone" placeholder="(11) 98765-4321" required>
+              </div>
+            </div>
+
+            <div class="auth-input-group">
+              <label for="registerPassword">Criar Senha</label>
+              <div class="input-with-icon">
+                <span class="field-icon">🔒</span>
+                <input type="password" id="registerPassword" placeholder="Mínimo 6 caracteres" required>
+              </div>
+            </div>
+
+            <div class="auth-input-group">
+              <label for="registerConfirmPassword">Confirmar Senha</label>
+              <div class="input-with-icon">
+                <span class="field-icon">🔒</span>
+                <input type="password" id="registerConfirmPassword" placeholder="Repita sua senha" required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-auth-submit" id="btnSubmitRegister">
+              <span>Criar Conta Gratuita</span>
+              <span class="btn-arrow">→</span>
+            </button>
+          </form>
+
+          <!-- Licenciamento e Informação de Acesso Gratuito -->
+          <div class="auth-footer-note">
+            <div class="license-status-badge">
+              <span class="license-dot"></span>
+              <span id="licenseBadgeText">App 100% Gratuito para Músicos</span>
+            </div>
+            <p class="signup-prompt" id="signupPromptText">
+              Não possui conta? <a href="#" id="linkToggleAuthMode">Criar Conta Gratuita</a>
+            </p>
+          </div>
+
+        </div>
+
+        <div class="auth-parish-footer">
+          <p>Comunidade Virgem da Piedade • Pastoral Litúrgica</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TELA 1: ESCOLHA E SELEÇÃO DE MISSAS (TELA PRINCIPAL PÓS-LOGIN) -->
+    <div id="massesScreen" class="screen-container hidden">
+      <!-- Top Bar / Header -->
+      <header class="app-header">
+        <div class="brand-section">
+          <div class="brand-icon">
+            <span>✝</span>
+          </div>
+          <div>
+            <h1 class="brand-title">Músicas Litúrgicas</h1>
+            <p class="brand-subtitle">Folheto Oficial: Igreja em Oração</p>
+          </div>
+        </div>
+
+        <!-- Identificação do Usuário Logado -->
+        <div class="user-action">
+          <button class="btn-login" id="btnUserMassesHeader" title="Perfil do Músico">
+            <span class="btn-icon">👤</span>
+            <span class="btn-label" id="userDisplayNameMasses">Diogo Nunes</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="app-content masses-hub-content">
+        <!-- Painel da Missa Selecionada (Atualiza ao clicar em qualquer missa da lista) -->
+        <section class="next-mass-hero-card" id="nextMassHeroCard">
+          <div class="next-mass-header">
+            <span class="next-mass-tag" id="selectedMassTag">✓ MISSA SELECIONADA</span>
+            <span class="liturgical-pill" id="nextMassPill">🟢 Tempo Comum</span>
+          </div>
+          <h2 class="next-mass-title" id="nextMassTitle">23º Domingo do Tempo Comum</h2>
+          <p class="next-mass-date" id="nextMassDate">Domingo, 07 de Setembro de 2026 • Ano A</p>
+          <div class="next-mass-salmo-box">
+            <span class="salmo-quote" id="nextMassSalmo">Sl: Não fecheis o coração (Sl 94)</span>
+          </div>
+
+          <div class="hero-actions-label">O que você deseja fazer nesta missa?</div>
+          <div class="next-mass-actions-grid">
+            <button type="button" class="btn-hero-action btn-hero-plan" id="btnHeroOpenRepertoire" title="Ver roteiro geral e planejar/trocar músicas">
+              <span class="hero-btn-icon">📋</span>
+              <span class="hero-btn-text">Planejar Roteiro</span>
+            </button>
+            <button type="button" class="btn-hero-action btn-hero-audio" id="btnHeroOpenAudio" title="Escutar apenas os áudios das músicas escolhidas">
+              <span class="hero-btn-icon">🎧</span>
+              <span class="hero-btn-text">Ouvir Músicas</span>
+            </button>
+            <button type="button" class="btn-hero-action btn-hero-stage" id="btnHeroOpenStage" title="Abrir cifras prontas para tocar e cantar na celebração">
+              <span class="hero-btn-icon">🎼</span>
+              <span class="hero-btn-text">Cifras & Execução</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Barra de Busca de Celebrações -->
+        <div class="masses-search-bar">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="massSearchInput" placeholder="Buscar missa por data, domingo ou solenidade..." autocomplete="off">
+          <button id="btnClearMassSearch" class="btn-clear-search hidden">✕</button>
+        </div>
+
+        <!-- Seletor de Meses / Filtro Rápido -->
+        <div class="month-filter-tabs" id="monthFilterTabs">
+          <button type="button" class="month-tab-btn active" data-month="todos">Todos</button>
+          <button type="button" class="month-tab-btn" data-month="outubro">Outubro</button>
+          <button type="button" class="month-tab-btn" data-month="novembro">Novembro</button>
+          <button type="button" class="month-tab-btn" data-month="advento">Advento</button>
+        </div>
+
+        <!-- Título da Seção de Seleção -->
+        <div class="section-title-row">
+          <h3>Selecione a Missa Planejada</h3>
+          <span class="section-badge">Toque para selecionar</span>
+        </div>
+
+        <!-- Lista de Cards de Todas as Missas (Modo Seleção) -->
+        <div class="masses-card-feed" id="massesCardFeed">
+          <!-- Gerado dinamicamente via app.js -->
+        </div>
+      </main>
+
+      <!-- Barra de Navegação Inferior Unificada -->
+      <nav class="bottom-nav">
+        <button class="nav-item active" data-route="masses" id="navMassesTab">
+          <span class="nav-icon">📅</span>
+          <span class="nav-label">Missas</span>
+        </button>
+        <button class="nav-item" data-route="home" id="navHomeTabFromMasses">
+          <span class="nav-icon">📋</span>
+          <span class="nav-label">Roteiro</span>
+        </button>
+        <button class="nav-item" data-route="audio" id="navAudioTabFromMasses">
+          <span class="nav-icon">🎧</span>
+          <span class="nav-label">Ouvir</span>
+        </button>
+        <button class="nav-item" data-route="stage" id="navStageTabFromMasses">
+          <span class="nav-icon">🎼</span>
+          <span class="nav-label">Cifras</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- TELA 2: ROTEIRO GERAL / PLANEJAR MISSA (Visão dos 10 Momentos & Substituição) -->
+    <div id="homeScreen" class="screen-container hidden">
+      <!-- Top Bar / Header -->
+      <header class="app-header">
+        <div class="brand-section">
+          <button class="btn-header-back" id="btnHomeBackToMasses" title="Voltar à seleção de missas">
+            <span>←</span>
+          </button>
+          <div class="brand-icon">
+            <span>📋</span>
+          </div>
+          <div>
+            <h1 class="brand-title">Roteiro da Missa</h1>
+            <p class="brand-subtitle" id="homeHeaderSubtitle">07/09/2026 • Igreja em Oração</p>
+          </div>
+        </div>
+
+        <!-- Identificação do Usuário Logado -->
+        <div class="user-action">
+          <button class="btn-login" id="btnLoginHeader" title="Perfil do Músico">
+            <span class="btn-icon">✅</span>
+            <span class="btn-label" id="userDisplayName">Diogo Nunes</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="app-content">
+
+        <!-- Card Contextual do Tempo Litúrgico & Data Selecionada -->
+        <section class="liturgical-banner" id="liturgicalBanner">
+          <div class="banner-top-row">
+            <div class="banner-badge">
+              <span class="color-dot green-dot" id="bannerColorDot"></span>
+              <span class="color-name" id="bannerColorName">Verde Litúrgico</span>
+            </div>
+            <!-- Botão de Ação: Trocar Missa Selecionada -->
+            <button class="btn-change-date" id="btnOpenDatesModal" title="Escolher outra missa">
+              <span class="calendar-icon">📅</span>
+              <span class="btn-change-label">Trocar Missa</span>
+            </button>
+          </div>
+
+          <h2 class="liturgical-title" id="bannerTitle">23º Domingo do Tempo Comum</h2>
+          <p class="liturgical-date" id="bannerDate">Domingo, 07 de Setembro de 2026 • Ano A</p>
+          <div class="banner-footer">
+            <span class="salmo-tag" id="bannerSalmo">Salmo: Sl 94 — "Não fecheis o coração"</span>
+          </div>
+
+          <!-- Atalhos Diretos do Roteiro para Áudios ou Cifras -->
+          <div class="roteiro-quick-Switch">
+            <button type="button" class="btn-roteiro-audio" id="btnHomeOpenAudio">
+              <span>🎧 Ouvir Áudios desta Missa</span>
+            </button>
+            <button type="button" class="btn-roteiro-stage" id="btnPlayRoteiro">
+              <span>🎼 Cifras & Execução</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Menu discreto para chaveamento técnico mantido oculto nos bastidores -->
+        <select id="folhetoSelect" class="styled-select hidden" aria-label="Selecione o Folheto ou Caderno Litúrgico">
+          <option value="caderno-piedade" selected>Igreja em Oração — Caderno Paroquial</option>
+          <option value="o-domingo">O Domingo (Paulus)</option>
+        </select>
+        <span class="hidden" id="quickRepTitle"></span>
+
+        <!-- Barra de Busca Rápida no Roteiro -->
+        <section class="search-section">
+          <div class="search-input-group">
+            <span class="search-icon">🔍</span>
+            <input 
+              type="text" 
+              id="searchInput" 
+              class="search-input" 
+              placeholder="Buscar canto por título, momento ou autor..."
+              autocomplete="off"
+            >
+            <button id="btnClearSearch" class="btn-clear-search hidden" title="Limpar busca">✕</button>
+          </div>
+        </section>
+
+        <!-- Modo de Escolha: Liturgia do Domingo vs Celebrações Especiais -->
+        <section class="mode-navigation">
+          <div class="tab-pills" role="tablist">
+            <button class="tab-pill active" id="tabLiturgia" role="tab" aria-selected="true">
+              <span class="tab-icon">⛪</span> Roteiro do Domingo
+            </button>
+            <button class="tab-pill" id="tabEspeciais" role="tab" aria-selected="false">
+              <span class="tab-icon">✨</span> Celebrações Especiais
+            </button>
+          </div>
+        </section>
+
+        <!-- Sub-filtro para Celebrações Especiais -->
+        <section class="special-occasions-bar hidden" id="specialOccasionsBar">
+          <span class="occasions-title">Escolha o Rito ou Celebração:</span>
+          <div class="occasions-scroll">
+            <button class="occasion-chip active" data-occasion="casamento">💍 Casamento</button>
+            <button class="occasion-chip" data-occasion="setimo-dia">🕊️ 7º Dia / Exéquias</button>
+            <button class="occasion-chip" data-occasion="aniversario">🎂 Ação de Graças / Aniv.</button>
+            <button class="occasion-chip" data-occasion="crisma">🔥 Crisma / Batismo</button>
+            <button class="occasion-chip" data-occasion="livre">🎸 Repertório Livre</button>
+          </div>
+        </section>
+
+        <!-- Lista de Partes da Celebração e Músicas -->
+        <section class="songs-section" id="songsContainer">
+          <!-- Gerado dinamicamente -->
+        </section>
+
+      </main>
+
+      <!-- Barra de Navegação Inferior Unificada -->
+      <nav class="bottom-nav">
+        <button class="nav-item" data-route="masses" id="navOpenCalendar">
+          <span class="nav-icon">📅</span>
+          <span class="nav-label">Missas</span>
+        </button>
+        <button class="nav-item active" data-route="home">
+          <span class="nav-icon">📋</span>
+          <span class="nav-label">Roteiro</span>
+        </button>
+        <button class="nav-item" data-route="audio" id="navOpenAudioFromHome">
+          <span class="nav-icon">🎧</span>
+          <span class="nav-label">Ouvir</span>
+        </button>
+        <button class="nav-item" data-route="stage" id="navOpenRoteiro">
+          <span class="nav-icon">🎼</span>
+          <span class="nav-label">Cifras</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- TELA 3: OUVIR REPERTÓRIO / ESTÚDIO DE ÁUDIO (Campo Exclusivo de Áudios da Missa) -->
+    <div id="audioScreen" class="screen-container hidden">
+      <header class="app-header">
+        <div class="brand-section">
+          <button class="btn-header-back" id="btnAudioBackToMasses" title="Voltar à seleção de missas">
+            <span>←</span>
+          </button>
+          <div class="brand-icon">
+            <span>🎧</span>
+          </div>
+          <div>
+            <h1 class="brand-title">Ouvir Repertório</h1>
+            <p class="brand-subtitle" id="audioHeaderSubtitle">07/09/2026 • 23º Domingo</p>
+          </div>
+        </div>
+
+        <div class="user-action">
+          <button class="btn-change-date-sm" id="btnAudioGoToStage" title="Ver cifras desta música">
+            <span>🎼 Ver Cifra</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="app-content audio-studio-content">
+        <!-- CONSOLE MASTER DE ÁUDIO (Inspirado no Estúdio do Modelo Anterior) -->
+        <section class="audio-deck-card" id="audioStudioDeck">
+          <div class="deck-top-badges">
+            <span class="deck-moment-pill" id="deckMomentBadge">1. Refrão Orante</span>
+            <span class="deck-Active-indicator" id="deckStatusBadge">🔊 Pronto para Tocar</span>
+          </div>
+
+          <h2 class="deck-song-title" id="deckSongTitle">A Palavra de Deus é luz!</h2>
+          <p class="deck-song-meta" id="deckSongMeta">Pe. José Raimundo Galvão • Tom Original: Dm</p>
+
+          <!-- Barra de Progresso Interativa -->
+          <div class="deck-scrubber-box">
+            <div class="deck-progress-track" id="deckProgressContainer">
+              <div class="deck-progress-fill" id="deckProgressBar" style="width: 0%;"></div>
+            </div>
+            <div class="deck-time-labels">
+              <span id="deckCurrentTime">0:00</span>
+              <span id="deckTotalTime">0:36</span>
+            </div>
+          </div>
+
+          <!-- Controles Principais de Reprodução -->
+          <div class="deck-main-controls">
+            <button type="button" class="deck-btn-sec" id="btnDeckPrev" title="Faixa anterior">⏮</button>
+            <button type="button" class="deck-btn-sec" id="btnDeckRewind" title="Voltar 10 segundos">-10s</button>
+            <button type="button" class="deck-btn-play-main" id="btnDeckPlayPause" title="Tocar ou Pausar">
+              <span id="deckPlayIcon">▶</span>
+            </button>
+            <button type="button" class="deck-btn-sec" id="btnDeckForward" title="Avançar 10 segundos">+10s</button>
+            <button type="button" class="deck-btn-sec" id="btnDeckNext" title="Próxima faixa">⏭</button>
+          </div>
+
+          <!-- Controles de Sequência (Playlist) e Velocidade -->
+          <div class="deck-options-row">
+            <button type="button" class="btn-deck-loop active" id="btnDeckAutoPlay" title="Tocar todas as músicas do repertório em sequência">
+              <span>🔁 Tocar em Sequência</span>
+            </button>
+            <div class="deck-speed-group">
+              <button type="button" class="deck-speed-btn" data-speed="0.75">0.75x</button>
+              <button type="button" class="deck-speed-btn active" data-speed="1">1.0x</button>
+              <button type="button" class="deck-speed-btn" data-speed="1.25">1.25x</button>
+            </div>
+          </div>
+
+          <!-- Acordeão Retrátil de Letra Limpa (Sem Cifras) -->
+          <div class="deck-lyrics-accordion">
+            <button type="button" class="btn-toggle-deck-lyrics" id="btnToggleDeckLyrics">
+              <span>📄 Acompanhar Letra Limpa (Sem Acordes)</span>
+              <span id="deckLyricsArrow">▼</span>
+            </button>
+            <div class="deck-lyrics-drawer hidden" id="deckLyricsDrawer">
+              <div class="deck-lyrics-text" id="deckLyricsText"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Cabeçalho da Playlist da Missa -->
+        <div class="section-title-row">
+          <h3>Áudios do Repertório Escolhido</h3>
+          <span class="section-badge" id="audioTracksCountBadge">10 faixas</span>
+        </div>
+
+        <!-- Lista Exclusiva dos Áudios das Músicas da Missa -->
+        <div class="audio-tracks-list" id="audioTracksContainer">
+          <!-- Gerado dinamicamente via app.js -->
+        </div>
+      </main>
+
+      <!-- Barra de Navegação Inferior Unificada -->
+      <nav class="bottom-nav">
+        <button class="nav-item" data-route="masses" id="navMassesFromAudio">
+          <span class="nav-icon">📅</span>
+          <span class="nav-label">Missas</span>
+        </button>
+        <button class="nav-item" data-route="home" id="navHomeFromAudio">
+          <span class="nav-icon">📋</span>
+          <span class="nav-label">Roteiro</span>
+        </button>
+        <button class="nav-item active" data-route="audio">
+          <span class="nav-icon">🎧</span>
+          <span class="nav-label">Ouvir</span>
+        </button>
+        <button class="nav-item" data-route="stage" id="navStageFromAudio">
+          <span class="nav-icon">🎼</span>
+          <span class="nav-label">Cifras</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- TELA 4: CIFRAS & EXECUÇÃO (Antigo Modo Palco / Tocar no Altar) -->
+    <div id="stageScreen" class="screen-container hidden">
+      <header class="stage-header">
+        <button class="btn-back-stage" id="btnBackFromStage" title="Voltar">
+          <span>←</span> Missas
+        </button>
+        <div class="stage-header-title">
+          <h2 id="stageHeaderTitle">Missa • 23º Domingo</h2>
+          <span class="stage-subtitle" id="stageHeaderSubtitle">07/09/2026 • Ano A</span>
+        </div>
+        <button class="btn-swap-song" id="btnSwapSongTrigger" title="Substituir esta música pontualmente">
+          ⇄ Trocar
+        </button>
+      </header>
+
+      <!-- Régua de Navegação dos Momentos da Missa -->
+      <nav class="moments-stepper" id="momentsStepper">
+        <!-- Momentos gerados dinamicamente -->
+      </nav>
+
+      <!-- Conteúdo do Momento Litúrgico Selecionado -->
+      <div class="stage-content" id="stageContentScroll">
+        
+        <div class="stage-song-info">
+          <div class="stage-badges-row">
+            <span class="stage-moment-badge" id="stageMomentBadge">1. Canto de Entrada</span>
+            <span class="stage-folheto-tag" id="stageFolhetoTag">O Domingo nº 01</span>
+          </div>
+          <h1 class="stage-song-title" id="stageSongTitle">O Senhor é Rei</h1>
+          <p class="stage-song-author" id="stageSongAuthor">Pe. Zezinho • Ritmo: Balada Litúrgica</p>
+        </div>
+
+        <!-- PLAYER DE ÁUDIO DE ENSAIO INTEGRADO (MP3 COMUNITÁRIO) -->
+        <div class="rehearsal-audio-player" id="rehearsalAudioPlayer">
+          <div class="audio-player-top">
+            <div class="audio-tag">
+              <span class="audio-pulse-icon">🔊</span>
+              <span id="stageAudioTagText">Áudio de Ensaio (Melodia & Ritmo)</span>
+            </div>
+            <span class="audio-time" id="audioTimeDisplay">0:00 / 0:36</span>
+          </div>
+
+          <div class="audio-player-controls">
+            <button class="btn-audio-play" id="btnAudioPlay" title="Tocar áudio de ensaio">
+              <span id="audioPlayIcon">▶</span>
+            </button>
+            <div class="audio-progress-container" id="audioProgressContainer">
+              <div class="audio-progress-bar" id="audioProgressBar" style="width: 0%;"></div>
+            </div>
+            <button class="btn-audio-speed" id="btnAudioSpeed" title="Velocidade de ensaio">1.0x</button>
+          </div>
+        </div>
+
+        <!-- MINIPLAYER DO YOUTUBE & CHIPS DE STREAMING (O DOMINGO / PAULUS) -->
+        <div class="youtube-miniplayer-box hidden" id="stageYoutubeContainer">
+          <div class="youtube-header-row">
+            <div class="youtube-tag">
+              <span class="yt-icon">▶</span>
+              <span id="youtubeTagTitle">Vídeo de Ensaio Oficial (Paulus)</span>
+            </div>
+            <button type="button" class="btn-toggle-video" id="btnToggleVideo" title="Recolher ou expandir vídeo">
+              <span id="btnToggleVideoText">Ocultar Vídeo</span>
+            </button>
+          </div>
+          <div class="youtube-iframe-wrapper" id="youtubeIframeWrapper">
+            <iframe id="stageYoutubeIframe" src="" title="Vídeo de Ensaio" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+          <!-- Barra de Atalhos para Streaming (100% legal e direto) -->
+          <div class="streaming-chips-bar" id="stageStreamingChips">
+            <a class="chip-streaming chip-spotify" id="chipSpotifyLink" href="#" target="_blank" rel="noopener noreferrer" title="Ouvir gravação oficial no Spotify">
+              <span class="chip-icon">🎧</span>
+              <span>Spotify</span>
+            </a>
+            <a class="chip-streaming chip-youtube" id="chipYoutubeLink" href="#" target="_blank" rel="noopener noreferrer" title="Abrir vídeo no YouTube oficial">
+              <span class="chip-icon">▶</span>
+              <span>YouTube</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- BARRA DE FERRAMENTAS DO MÚSICO -->
+        <div class="stage-toolbar">
+          <div class="toolbar-group">
+            <span class="tb-label">Tom:</span>
+            <button class="btn-tool" id="btnStageToneDown">-</button>
+            <span class="tb-value-tone" id="stageToneDisplay">G</span>
+            <button class="btn-tool" id="btnStageToneUp">+</button>
+            <button class="btn-tool-link" id="btnStageToneReset">Reset</button>
+          </div>
+
+          <div class="toolbar-group">
+            <span class="tb-label">Capo:</span>
+            <button class="btn-tool" id="btnCapoDown" title="Diminuir casa do capotraste">-</button>
+            <span class="tb-value-tone" id="stageCapoDisplay">0</span>
+            <button class="btn-tool" id="btnCapoUp" title="Aumentar casa do capotraste">+</button>
+          </div>
+
+          <div class="toolbar-group">
+            <span class="tb-label">Letra:</span>
+            <button class="btn-tool" id="btnStageFontDown">A-</button>
+            <button class="btn-tool" id="btnStageFontUp">A+</button>
+          </div>
+
+          <div class="toolbar-group">
+            <button class="btn-tool-save" id="btnSaveTone" title="Salvar tom e capotraste para esta missa">
+              <span>💾 Salvar Tom</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ÁREA DA CIFRA & LETRA FORMATADA -->
+        <div class="stage-cifra-box">
+          <pre id="stageCifraPre"></pre>
+        </div>
+
+      </div>
+
+      <!-- WIDGET FLUTUANTE DE ROLAGEM AUTOMÁTICA (Acompanha a rolagem da tela) -->
+      <div class="autoscroll-widget" id="autoscrollWidget">
+        <button type="button" class="autoscroll-toggle-btn" id="autoscrollToggleBtn" title="Iniciar ou Pausar Rolagem Automática">
+          📜 <span id="autoscrollBtnText">Rolar</span>
+        </button>
+        <div class="autoscroll-speed-group">
+          <button type="button" class="autoscroll-speed-btn" id="btnScrollSpeedDown" title="Diminuir velocidade">−</button>
+          <span class="autoscroll-speed-display" id="scrollSpeedDisplay">Vel 2</span>
+          <button type="button" class="autoscroll-speed-btn" id="btnScrollSpeedUp" title="Aumentar velocidade">+</button>
+        </div>
+      </div>
+
+      <!-- FOOTER FLUTUANTE DE NAVEGAÇÃO DA MISSA -->
+      <footer class="stage-footer">
+        <button class="btn-stage-nav btn-stage-prev" id="btnStagePrev">
+          <span>◀</span> Momento Anterior
+        </button>
+        <button class="btn-stage-nav btn-stage-next" id="btnStageNext">
+          <span id="nextButtonLabel">Próximo Momento</span> <span>▶</span>
+        </button>
+      </footer>
+
+      <!-- TOAST DE NOTIFICAÇÃO SUAVE -->
+      <div id="appToast" class="toast-notification hidden"></div>
+    </div>
+
+    <!-- MODAL (MODELO B): SELETOR DE MISSAS PLANEJADAS POR DATA -->
+    <div class="modal-overlay hidden" id="datesModal">
+      <div class="modal-card modal-planned-masses">
+        <button class="btn-close-modal" id="btnCloseDatesModal">✕</button>
+        <div class="modal-header">
+          <div class="modal-icon">📅</div>
+          <h3>Missas Planejadas</h3>
+          <p>Escolha a data da celebração que seu ministério vai tocar ou ensaiar.</p>
+        </div>
+
+        <div class="planned-masses-list" id="plannedMassesContainer">
+          <!-- Lista de datas gerada dinamicamente via app.js -->
+        </div>
+
+        <div class="modal-footer-action">
+          <p class="footer-note">💡 A data selecionada carrega automaticamente o roteiro oficial do folheto daquele domingo.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Substituição Pontual de Música [⇄ Trocar] -->
+    <div class="modal-overlay hidden" id="swapModal">
+      <div class="modal-card">
+        <button class="btn-close-modal" id="btnCloseSwapModal">✕</button>
+        <div class="modal-header">
+          <div class="modal-icon">⇄</div>
+          <h3 id="swapModalTitle">Trocar Música</h3>
+          <p>Escolha uma alternativa da comunidade para este momento da missa.</p>
+        </div>
+
+        <div class="swap-options-list" id="swapOptionsContainer">
+          <!-- Alternativas geradas dinamicamente -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Login & Cadastro Não-Intrusivo -->
+    <div class="modal-overlay hidden" id="loginModal">
+      <div class="modal-card">
+        <button class="btn-close-modal" id="btnCloseLoginModal">✕</button>
+        <div class="modal-header">
+          <div class="modal-icon">✝</div>
+          <h3>Acesse sua Conta</h3>
+          <p>Salve seus repertórios na nuvem e compartilhe com seu ministério de música.</p>
+        </div>
+
+        <div class="login-options">
+          <button class="btn-google-login" id="btnGoogleMock">
+            <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Continuar com o Google</span>
+          </button>
+
+          <div class="login-divider">
+            <span>ou continue com e-mail</span>
+          </div>
+
+          <form class="login-form" onsubmit="event.preventDefault();">
+            <div class="input-field">
+              <label for="inputEmail">E-mail</label>
+              <input type="email" id="inputEmail" placeholder="seuemail@exemplo.com">
+            </div>
+            <div class="input-field">
+              <label for="inputSenha">Senha</label>
+              <input type="password" id="inputSenha" placeholder="••••••••">
+            </div>
+            <button class="btn-primary-block" id="btnSubmitLogin">Entrar na Conta</button>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <p>Você pode continuar utilizando o app como visitante sem restrição de consulta.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE AJUSTES & CONFIGURAÇÃO DO BOLETIM PADRÃO -->
+    <div class="modal-overlay hidden" id="settingsModal">
+      <div class="modal-card">
+        <button class="btn-close-modal" id="btnCloseSettingsModal">✕</button>
+        <div class="modal-header">
+          <div class="modal-icon">⚙️</div>
+          <h3>Preferências do Músico</h3>
+          <p>Configure seu boletim preferido para carregar automaticamente sempre que abrir o app.</p>
+        </div>
+
+        <div class="settings-form">
+          <div class="input-field">
+            <label for="defaultBulletinSelect">Meu Boletim / Folheto Litúrgico Padrão:</label>
+            <select id="defaultBulletinSelect" class="styled-select-box">
+              <option value="caderno-piedade">Caderno Paroquial — Comunidade Virgem da Piedade</option>
+              <option value="o-domingo">O Domingo (Paulus)</option>
+              <option value="deus-conosco">Deus Conosco (Santuário)</option>
+              <option value="cantai-ao-senhor">Cantai ao Senhor (Hinário)</option>
+              <option value="hinario-cnbb">Hinário Litúrgico (CNBB)</option>
+              <option value="livre">Repertório Geral / Livre</option>
+            </select>
+            <span class="field-hint">✅ Este boletim será lembrado em definitivo neste dispositivo.</span>
+          </div>
+
+          <div class="settings-check-group">
+            <label class="check-container">
+              <input type="checkbox" id="checkAutoPlayAudio">
+              <span class="checkmark"></span>
+              <span class="check-label">Priorizar áudio gravado em MP3 da comunidade</span>
+            </label>
+          </div>
+
+          <button class="btn-primary-block" id="btnSaveSettings">Salvar Preferências</button>
+        </div>
+
+        <div class="modal-footer">
+          <p>Pastoral de Música • Comunidade Virgem da Piedade</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE RECUPERAÇÃO DE SENHA -->
+    <div class="modal-overlay hidden" id="recoveryModal">
+      <div class="modal-card">
+        <button class="btn-close-modal" id="btnCloseRecoveryModal">✕</button>
+        <div class="modal-header">
+          <div class="modal-icon">🔐</div>
+          <h3>Recuperar Senha</h3>
+          <p>Como seu cadastro vincula e-mail e celular, escolha por onde prefere receber seu código de segurança:</p>
+        </div>
+
+        <!-- Etapa 1: Escolha do Método de Recuperação -->
+        <div id="recoveryStep1" class="recovery-step">
+          <div class="recovery-methods-grid">
+            <button type="button" class="recovery-method-card" id="btnRecoverViaWhatsApp">
+              <span class="recovery-card-icon">💬</span>
+              <div class="recovery-card-info">
+                <strong>WhatsApp / SMS</strong>
+                <span>Receber código instantâneo de 6 dígitos no celular</span>
+              </div>
+              <span class="recovery-card-arrow">→</span>
+            </button>
+
+            <button type="button" class="recovery-method-card" id="btnRecoverViaEmail">
+              <span class="recovery-card-icon">✉️</span>
+              <div class="recovery-card-info">
+                <strong>E-mail</strong>
+                <span>Receber código de verificação na caixa de entrada</span>
+              </div>
+              <span class="recovery-card-arrow">→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Etapa 2: Confirmação do Contato Cadastrado -->
+        <div id="recoveryStep2" class="recovery-step hidden">
+          <div class="input-field">
+            <label id="lblRecoveryInput" for="recoveryInputContact">Informe seu Celular cadastrado:</label>
+            <input type="text" id="recoveryInputContact" placeholder="(11) 98765-4321" value="(11) 98765-4321">
+          </div>
+          <button class="btn-primary-block" id="btnSendRecoveryCode">Enviar Código de Segurança</button>
+          <button type="button" class="btn-text-secondary" id="btnBackToRecoveryStep1">← Escolher outro método</button>
+        </div>
+
+        <!-- Etapa 3: Digitação do Código & Nova Senha -->
+        <div id="recoveryStep3" class="recovery-step hidden">
+          <div class="recovery-notice-banner" id="recoverySentNotice">
+            <span>✅ Código de 6 dígitos enviado! Verifique seu aparelho e crie sua nova senha:</span>
+          </div>
+          <div class="input-field">
+            <label for="recoveryCodeInput">Código de 6 dígitos recebido:</label>
+            <input type="text" id="recoveryCodeInput" placeholder="Ex: 123456" maxlength="6" value="123456">
+          </div>
+          <div class="input-field">
+            <label for="recoveryNewPassword">Nova Senha:</label>
+            <input type="password" id="recoveryNewPassword" placeholder="Digite sua nova senha" value="senhaNova2026">
+          </div>
+          <div class="input-field">
+            <label for="recoveryConfirmPassword">Confirmar Nova Senha:</label>
+            <input type="password" id="recoveryConfirmPassword" placeholder="Repita a nova senha" value="senhaNova2026">
+          </div>
+          <button class="btn-primary-block" id="btnSubmitNewPassword">Salvar Nova Senha & Entrar</button>
+        </div>
+
+        <div class="modal-footer">
+          <p>Pastoral Litúrgica • Suporte Comunitário</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Player de Áudio HTML5 Nativo para tocar os MP3s reais -->
+    <audio id="realAudioElement" preload="auto"></audio>
+  </div>
+
+  <!-- Dados homologados reais das celebrações -->
+  <script src="js/dados_reais.js"></script>
+  <script src="js/dados_o_domingo.js"></script>
+  <!-- Lógica da Aplicação -->
+  <script src="js/app.js"></script>
+</body>
+</html>

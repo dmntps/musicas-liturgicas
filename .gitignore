@@ -1,0 +1,16 @@
+# Pastas temporárias de testes do Edge
+temp_edge_user_*
+*.log
+
+# Scripts descartáveis de verificação
+check_*.py
+check_*.js
+inspect_*.py
+get_*.py
+find_*.py
+list_*.py
+test_*.js
+extrair_*.py
+build_dados_reais.js
+import_novembro.js
+*.png
