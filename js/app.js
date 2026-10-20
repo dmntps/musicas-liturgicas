@@ -614,6 +614,16 @@ const dom = {
   authLiturgicalTag: document.getElementById("authLiturgicalTag"),
   userDisplayName: document.getElementById("userDisplayName"),
 
+  // Modal de Acesso Google
+  googleAuthModal: document.getElementById("googleAuthModal"),
+  btnCloseGoogleModal: document.getElementById("btnCloseGoogleModal"),
+  googleModalTitle: document.getElementById("googleModalTitle"),
+  formGoogleModal: document.getElementById("formGoogleModal"),
+  googleModalEmail: document.getElementById("googleModalEmail"),
+  googleModalName: document.getElementById("googleModalName"),
+  googleModalPhone: document.getElementById("googleModalPhone"),
+  btnSubmitGoogleModal: document.getElementById("btnSubmitGoogleModal"),
+
   // Modal de Recuperação de Senha
   recoveryModal: document.getElementById("recoveryModal"),
   btnCloseRecoveryModal: document.getElementById("btnCloseRecoveryModal"),
@@ -1058,25 +1068,64 @@ function setupAuthEvents() {
     });
   }
 
-  // 1. Acesso com Google (Autenticação / Cadastro com Dados Reais)
+  // 1. Acesso com Google (Abre Modal Elegante Integrado)
   if (dom.btnGoogleAuth) {
     dom.btnGoogleAuth.addEventListener("click", () => {
       const isRegister = (appState.authMode === "register");
-      const userEmail = prompt("Informe o seu e-mail do Google para continuar:", "");
-      if (!userEmail || !userEmail.includes("@")) {
-        alert("É necessário informar um e-mail válido para acessar.");
+      if (dom.googleModalTitle) {
+        dom.googleModalTitle.innerText = isRegister ? "Cadastrar com Conta Google" : "Acesso com Conta Google";
+      }
+      if (dom.googleAuthModal) {
+        dom.googleAuthModal.classList.remove("hidden");
+        if (dom.googleModalEmail) dom.googleModalEmail.focus();
+      }
+    });
+  }
+
+  // Fechar Modal Google
+  if (dom.btnCloseGoogleModal) {
+    dom.btnCloseGoogleModal.addEventListener("click", () => {
+      if (dom.googleAuthModal) dom.googleAuthModal.classList.add("hidden");
+    });
+  }
+  if (dom.googleAuthModal) {
+    dom.googleAuthModal.addEventListener("click", (e) => {
+      if (e.target === dom.googleAuthModal) dom.googleAuthModal.classList.add("hidden");
+    });
+  }
+
+  // Submissão do Modal Google
+  if (dom.formGoogleModal) {
+    dom.formGoogleModal.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = dom.googleModalEmail ? dom.googleModalEmail.value.trim().toLowerCase() : "";
+      const name = dom.googleModalName ? dom.googleModalName.value.trim() : "";
+      const phone = dom.googleModalPhone ? dom.googleModalPhone.value.trim() : "";
+
+      if (!email || !email.includes("@")) {
+        alert("Por favor, informe seu e-mail do Gmail.");
         return;
       }
-      const userName = prompt("Qual o seu nome completo?", "") || userEmail.split("@")[0];
-      const userPhone = prompt("Informe seu WhatsApp/Celular com DDD (para recuperação de conta):", "") || "(Não informado)";
+      if (!name || name.length < 3) {
+        alert("Por favor, digite seu nome completo.");
+        return;
+      }
+      if (!phone || phone.length < 8) {
+        alert("Por favor, informe seu celular/WhatsApp para contato.");
+        return;
+      }
 
+      if (dom.googleAuthModal) dom.googleAuthModal.classList.add("hidden");
+
+      const isRegister = (appState.authMode === "register");
       loginSuccess({
-        name: userName.trim(),
-        email: userEmail.trim().toLowerCase(),
-        phone: userPhone.trim(),
+        name: name,
+        email: email,
+        phone: phone,
         method: isRegister ? "Google (Cadastro)" : "Google (Login)",
         role: "Músico / Animador Litúrgico"
       });
+      showToast(`✅ Bem-vindo pelo Google, ${name}!`);
     });
   }
 
