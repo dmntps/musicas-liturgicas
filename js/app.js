@@ -552,6 +552,8 @@ const dom = {
   btnHomeBackToMasses: document.getElementById("btnHomeBackToMasses"),
   homeHeaderSubtitle: document.getElementById("homeHeaderSubtitle"),
   btnHomeOpenAudio: document.getElementById("btnHomeOpenAudio"),
+  btnExportPdfHome: document.getElementById("btnExportPdfHome"),
+  btnExportPdfStage: document.getElementById("btnExportPdfStage"),
   navOpenAudioFromHome: document.getElementById("navOpenAudioFromHome"),
 
   // Elementos da Tela 3: Ouvir Repertório / Estúdio de Áudio
@@ -1938,6 +1940,14 @@ function setupHomeEvents() {
     dom.navOpenRoteiro.addEventListener("click", () => openStageMode(0, "home"));
   }
 
+  // Exportar Roteiro da Missa em PDF / Impressão
+  if (dom.btnExportPdfHome) {
+    dom.btnExportPdfHome.addEventListener("click", exportMassRepertoireToPdf);
+  }
+  if (dom.btnExportPdfStage) {
+    dom.btnExportPdfStage.addEventListener("click", exportMassRepertoireToPdf);
+  }
+
   // Ajustes de Boletim Litúrgico e Preferências
   if (dom.navOpenAjustes) dom.navOpenAjustes.addEventListener("click", () => dom.settingsModal.classList.remove("hidden"));
   if (dom.btnCloseSettingsModal) dom.btnCloseSettingsModal.addEventListener("click", () => dom.settingsModal.classList.add("hidden"));
@@ -2868,4 +2878,234 @@ function formatCifraDisplay(cifraText, transposition = 0) {
 
     return line;
   }).join("\n");
+}
+
+// ========================================================
+// EXPORTAÇÃO COMPLETA DO ROTEIRO EM PDF / IMPRESSÃO
+// Inclui os tons transpostos e capotraste salvos pelo músico
+// ========================================================
+function exportMassRepertoireToPdf() {
+  if (!appState.activeMissa || appState.activeMissa.length === 0) {
+    alert("Nenhuma missa selecionada para exportar.");
+    return;
+  }
+
+  const catalog = getActiveCatalog();
+  const currentMass = catalog[appState.activeDateKey] || {
+    title: "Missa Litúrgica",
+    dateFormatted: "Data não definida",
+    salmo: "Salmo Responsorial",
+    cor: "Verde Litúrgico"
+  };
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    alert("O navegador bloqueou a janela de impressão. Permita pop-ups para gerar o PDF.");
+    return;
+  }
+
+  // Gera as páginas com as músicas na tonalidade configurada
+  const songsHtml = appState.activeMissa.map((song, index) => {
+    // Tom e capo configurados para este canto
+    const transposition = appState.stageTranspositions[song.id] || 0;
+    const capo = appState.stageCapos[song.id] || 0;
+    const fingeringTransposition = transposition - capo;
+    const effectiveRealTone = transposeChord(song.tone, transposition);
+
+    let toneInfoText = `Tom: ${effectiveRealTone}`;
+    if (capo > 0) {
+      const fingeringTone = transposeChord(effectiveRealTone, -capo);
+      toneInfoText += ` (Capo ${capo}ª casa • Dedilhar em ${fingeringTone})`;
+    }
+    if (transposition !== 0) {
+      toneInfoText += ` • Original: ${song.tone}`;
+    }
+
+    const formattedCifra = formatCifraDisplay(song.cifra, fingeringTransposition);
+
+    return `
+      <section class="pdf-song-block">
+        <div class="pdf-song-header">
+          <div class="pdf-moment-badge">${index + 1}. ${song.moment}</div>
+          <h2 class="pdf-song-title">${song.title}</h2>
+          <div class="pdf-song-meta">
+            <span class="pdf-tone-badge"><strong>${toneInfoText}</strong></span>
+            <span>${song.author || "Comunidade"}</span>
+            <span>• ${song.folhetoLabel || "Igreja em Oração"}</span>
+          </div>
+        </div>
+        <pre class="pdf-cifra-content">${formattedCifra}</pre>
+      </section>
+    `;
+  }).join("");
+
+  const fullPrintHtml = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Roteiro Litúrgico - ${currentMass.title}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 15mm 15mm 18mm 15mm;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      color: #1a1a1a;
+      background: #ffffff;
+      line-height: 1.4;
+      padding: 10px;
+    }
+    .pdf-cover-header {
+      border-bottom: 3px double #1b5e20;
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .pdf-parish-title {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #1b5e20;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .pdf-mass-title {
+      font-size: 18pt;
+      font-weight: 800;
+      color: #111827;
+      margin: 3px 0;
+    }
+    .pdf-mass-subtitle {
+      font-size: 10.5pt;
+      color: #4b5563;
+    }
+    .pdf-mass-salmo {
+      font-size: 9.5pt;
+      font-style: italic;
+      color: #374151;
+      margin-top: 4px;
+    }
+    .pdf-meta-right {
+      text-align: right;
+      font-size: 8.5pt;
+      color: #6b7280;
+    }
+    .pdf-song-block {
+      page-break-inside: avoid;
+      margin-bottom: 26px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 14px 16px;
+      background: #fafafa;
+    }
+    .pdf-song-header {
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+    .pdf-moment-badge {
+      display: inline-block;
+      font-size: 8.5pt;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #15803d;
+      letter-spacing: 0.5px;
+    }
+    .pdf-song-title {
+      font-size: 13.5pt;
+      font-weight: 800;
+      color: #111827;
+      margin: 2px 0 4px;
+    }
+    .pdf-song-meta {
+      font-size: 9pt;
+      color: #4b5563;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .pdf-tone-badge {
+      color: #b45309;
+      background: #fef3c7;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .pdf-cifra-content {
+      font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+      font-size: 9.5pt;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.5;
+      color: #1f2937;
+    }
+    .cifra-chord {
+      color: #166534;
+      font-weight: 700;
+    }
+    .cifra-section-tag {
+      color: #b45309;
+      font-weight: 700;
+      display: inline-block;
+      margin-top: 6px;
+    }
+    .pdf-print-footer {
+      margin-top: 25px;
+      text-align: center;
+      font-size: 8.5pt;
+      color: #9ca3af;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 8px;
+    }
+    @media print {
+      body {
+        padding: 0;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="pdf-cover-header">
+    <div>
+      <div class="pdf-parish-title">✝ Pastoral Litúrgica • Hinário Paroquial</div>
+      <h1 class="pdf-mass-title">${currentMass.title}</h1>
+      <p class="pdf-mass-subtitle">${currentMass.dateFormatted} • ${currentMass.ano || "Ano A"}</p>
+      <p class="pdf-mass-salmo">${currentMass.salmo || ""}</p>
+    </div>
+    <div class="pdf-meta-right">
+      <span>Folheto: Igreja em Oração</span><br>
+      <span>Gerado em: ${new Date().toLocaleDateString("pt-BR")}</span>
+    </div>
+  </div>
+
+  <div class="pdf-songs-container">
+    ${songsHtml}
+  </div>
+
+  <div class="pdf-print-footer">
+    Músicas Litúrgicas • Roteiro oficial de apoio aos músicos e animadores da celebração.
+  </div>
+
+  <script>
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    });
+  </script>
+</body>
+</html>`;
+
+  printWindow.document.open();
+  printWindow.document.write(fullPrintHtml);
+  printWindow.document.close();
 }
