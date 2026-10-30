@@ -1695,6 +1695,56 @@ body {
   box-shadow: 0 0 6px rgba(59, 130, 246, 0.6) !important;
 }
 
+.gold-dot {
+  background-color: #fbbf24 !important;
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.75) !important;
+}
+
+.purple-dot {
+  background-color: #c084fc !important;
+  box-shadow: 0 0 8px rgba(192, 132, 252, 0.75) !important;
+}
+
+.liturgical-banner.theme-gold {
+  background: linear-gradient(135deg, #5c3d04 0%, #92600a 55%, #3d2702 100%) !important;
+  border: 1px solid rgba(253, 224, 71, 0.45) !important;
+  box-shadow: 0 8px 24px rgba(146, 96, 10, 0.3) !important;
+}
+
+.liturgical-banner.theme-gold .banner-badge {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(253, 224, 71, 0.4);
+}
+
+.liturgical-banner.theme-gold .color-name {
+  color: #fef08a;
+}
+
+.liturgical-banner.theme-gold .salmo-tag {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fef9c3;
+}
+
+.liturgical-banner.theme-purple {
+  background: linear-gradient(135deg, #3b0764 0%, #581c87 55%, #2e1065 100%) !important;
+  border: 1px solid rgba(216, 180, 254, 0.4) !important;
+  box-shadow: 0 8px 24px rgba(88, 28, 135, 0.3) !important;
+}
+
+.liturgical-banner.theme-purple .banner-badge {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(216, 180, 254, 0.35);
+}
+
+.liturgical-banner.theme-purple .color-name {
+  color: #e9d5ff;
+}
+
+.liturgical-banner.theme-purple .salmo-tag {
+  background: rgba(255, 255, 255, 0.14);
+  color: #f3e8ff;
+}
+
 .liturgical-banner.theme-mariano {
   background: linear-gradient(135deg, #103366 0%, #081d3d 100%) !important;
   border: 1px solid rgba(147, 197, 253, 0.35) !important;
@@ -2554,6 +2604,16 @@ body {
   border-color: #93c5fd;
 }
 
+.next-mass-hero-card.theme-gold-hero {
+  background: linear-gradient(135deg, #4d3203 0%, #855508 55%, #3b2502 100%);
+  border-color: #fde047;
+}
+
+.next-mass-hero-card.theme-purple-hero {
+  background: linear-gradient(135deg, #2e1065 0%, #581c87 58%, #3b0764 100%);
+  border-color: #d8b4fe;
+}
+
 /* Barra de Busca de Missas */
 .masses-search-bar {
   position: relative;
@@ -2683,6 +2743,54 @@ body {
   border-color: #2563eb;
   border-left: 5px solid #2563eb;
   background: linear-gradient(90deg, #eff6ff 0%, #ffffff 100%);
+}
+
+.mass-hub-card.card-gold.active {
+  border-color: #ca8a04;
+  border-left: 5px solid #ca8a04;
+  background: linear-gradient(90deg, #fefce8 0%, #ffffff 100%);
+}
+
+.mass-hub-card.card-gold.active .mass-radio-indicator {
+  background: #b45309;
+  border-color: #b45309;
+}
+
+.mass-hub-card.card-purple.active {
+  border-color: #7e22ce;
+  border-left: 5px solid #7e22ce;
+  background: linear-gradient(90deg, #faf5ff 0%, #ffffff 100%);
+}
+
+.mass-hub-card.card-purple.active .mass-radio-indicator {
+  background: #6b21a8;
+  border-color: #6b21a8;
+}
+
+.gold-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  margin-left: 4px;
+}
+
+.purple-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f3e8ff;
+  color: #6b21a8;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  margin-left: 4px;
 }
 
 .mass-hub-info {

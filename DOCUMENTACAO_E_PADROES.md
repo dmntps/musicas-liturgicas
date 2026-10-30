@@ -7,14 +7,16 @@ Este documento consolida o raio-x completo do protótipo desenvolvido, as decis�
 ## 1. 🔍 O Que Já Foi Construído e Validado
 
 ### 1.1. Camada de Dados e Acervo Litúrgico
-- **9 Celebrações Reais Homologadas**:
-  - **Setembro de 2026**: 23º, 24º, 25º e 26º Domingos do Tempo Comum (Ano A).
-  - **Outubro de 2026**: 27º e 28º Domingos, Solenidade de Nossa Senhora Aparecida (12/10), 29º (Missões) e 30º Domingos.
-- **Ecossistema Multi-Folheto**:
-  - **Caderno Paroquial (Comunidade Virgem da Piedade)**: repertório pastoral com arranjos locais e áudios de ensaio da própria comunidade.
-  - **O Domingo (Editora Paulus)**: cânticos oficiais do folheto dominical nacional com integração de vídeo oficial e streaming.
+- **Catálogo Ativo (Novembro de 2026 — A partir do 32º Domingo)**:
+  - **08/11/2026**: 32º Domingo do Tempo Comum — Ano A (*Verde Litúrgico*, 11 cantos revisados).
+  - **15/11/2026**: 33º Domingo do Tempo Comum — Ano A (*Verde Litúrgico*, 11 cantos revisados).
+  - **22/11/2026**: Solenidade de Cristo Rei do Universo — Ano A (*Branco & Ouro*, 12 cantos revisados).
+  - **29/11/2026**: 1º Domingo do Advento — Ano B (*Roxo Litúrgico*, 9 cantos revisados).
+  - *Nota de Histórico*: Repertórios de celebrações já encerradas (Setembro, Outubro, Todos os Santos e Fiéis Defuntos) são preservados na pasta `historico/`.
+- **Ecossistema Litúrgico**:
+  - **Igreja em Oração (Folheto Oficial da Comunidade)**: repertório pastoral sincronizado fielmente com os documentos HTML revisados da paróquia, incluindo arranjos, ritmos e áudios MP3 de ensaio.
 - **Acervo de Áudio**:
-  - **77 arquivos MP3 reais** organizados na pasta `audios/`, gravados/extraídos para ensaio e memorização melódica dos músicos.
+  - **27 arquivos MP3 reais deduplicados** organizados na pasta `audios/`, extraídos diretamente dos documentos HTML revisados para ensaio e memorização melódica dos músicos.
 - **Suporte a Mídia Oficial**:
   - Player de vídeo YouTube embutido (modo privativo `youtube-nocookie`) com recurso retrátil/expansível.
   - Links diretos de reprodução legal no Spotify e YouTube.

@@ -483,8 +483,18 @@ const swapAlternatives = {
   ]
 };
 
-// Escala cromática para transposição
-const chromaticScale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+// Escalas cromáticas com inteligência enarmônica (sustenidos vs bemóis — Padrão HTML Revisado)
+const SCALE_SHARP = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const SCALE_FLAT  = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
+const chromaticScale = SCALE_SHARP;
+
+const NOTE_MAP = {
+  "C": 0, "B#": 0, "C#": 1, "Db": 1, "D": 2, "D#": 3, "Eb": 3,
+  "E": 4, "Fb": 4, "F": 5, "E#": 5, "F#": 6, "Gb": 6, "G": 7,
+  "G#": 8, "Ab": 8, "A": 9, "A#": 10, "Bb": 10, "B": 11, "Cb": 11
+};
+
+const FLAT_KEYS = ["F", "Bb", "Eb", "Ab", "Db", "Gm", "Dm", "Cm", "Fm", "Bbm", "Ebm"];
 
 // Estado Global da Aplicação
 const appState = {
@@ -492,9 +502,11 @@ const appState = {
   isAuthenticated: false,
   currentUser: null,
   authMode: "login", // "login" ou "register"
-  activeFolheto: localStorage.getItem("liturgia_boletim_padrao") || "caderno-piedade",
-  activeDateKey: "2026-09-07", // Data ativa padrão
-  activeMissa: JSON.parse(JSON.stringify(missaDomingo23)),
+  activeFolheto: "caderno-piedade",
+  activeDateKey: "2026-11-08", // Data ativa padrão (32º Domingo do Tempo Comum)
+  activeMissa: (typeof missasReais !== "undefined" && missasReais["2026-11-08"])
+    ? JSON.parse(JSON.stringify(missasReais["2026-11-08"].songs))
+    : JSON.parse(JSON.stringify(missaDomingo23)),
   currentStageIndex: 0,
   stageTranspositions: {},
   stageCapos: {},
@@ -790,13 +802,13 @@ function switchActiveFolheto(folhetoId) {
   const availableDates = Object.keys(catalog);
   let targetDate = appState.activeDateKey;
   if (!catalog[targetDate]) {
-    targetDate = availableDates[0] || "2026-09-14";
+    targetDate = availableDates[0] || "2026-11-08";
   }
 
   selectMassDate(targetDate);
   renderHomeSongs();
 
-  const folhetoNome = folhetoId === "o-domingo" ? "O Domingo (Paulus)" : "Caderno Paroquial (Piedade)";
+  const folhetoNome = folhetoId === "o-domingo" ? "O Domingo (Paulus)" : "Igreja em Oração";
   showToast(`📖 Repertório carregado: ${folhetoNome}`);
 }
 
@@ -1344,14 +1356,23 @@ function renderMassesHub(monthFilter = "todos", searchQuery = "") {
       dom.selectedMassTag.innerText = `✓ MISSA SELECIONADA (${heroMass.shortDate})`;
     }
     if (dom.nextMassHeroCard) {
-      dom.nextMassHeroCard.classList.toggle("theme-mariano-hero", heroMass.bannerTheme === "mariano");
+      dom.nextMassHeroCard.classList.remove("theme-mariano-hero", "theme-gold-hero", "theme-purple-hero");
+      if (heroMass.bannerTheme === "mariano") dom.nextMassHeroCard.classList.add("theme-mariano-hero");
+      else if (heroMass.bannerTheme === "gold") dom.nextMassHeroCard.classList.add("theme-gold-hero");
+      else if (heroMass.bannerTheme === "purple") dom.nextMassHeroCard.classList.add("theme-purple-hero");
     }
     if (dom.nextMassPill) {
       if (heroMass.bannerTheme === "mariano") {
         dom.nextMassPill.innerHTML = `👑 Solenidade Mariana`;
         dom.nextMassPill.style.color = "#93c5fd";
+      } else if (heroMass.bannerTheme === "gold") {
+        dom.nextMassPill.innerHTML = `👑 ${heroMass.cor || "Branco & Ouro"}`;
+        dom.nextMassPill.style.color = "#fde047";
+      } else if (heroMass.bannerTheme === "purple") {
+        dom.nextMassPill.innerHTML = `🟣 ${heroMass.cor || "Roxo Litúrgico"}`;
+        dom.nextMassPill.style.color = "#e9d5ff";
       } else {
-        dom.nextMassPill.innerHTML = `🟢 ${heroMass.cor || "Tempo Comum"}`;
+        dom.nextMassPill.innerHTML = `🟢 ${heroMass.cor || "Verde Litúrgico"}`;
         dom.nextMassPill.style.color = "#86efac";
       }
     }
@@ -1367,14 +1388,16 @@ function renderMassesHub(monthFilter = "todos", searchQuery = "") {
     const mass = catalog[dateKey];
     if (!mass) return;
 
-    // Filtro por Mês
-    if (monthFilter === "outubro" && !dateKey.startsWith("2026-10")) return;
-    if (monthFilter === "novembro" && (!dateKey.startsWith("2026-11") || dateKey === "2026-11-29")) return;
-    if (monthFilter === "advento" && dateKey !== "2026-11-29" && !dateKey.startsWith("2026-12")) return;
+    // Filtro por Tempo Litúrgico / Mês
+    const titleLower = (mass.title || "").toLowerCase();
+    if (monthFilter === "tempo-comum" && mass.bannerTheme !== "green" && !titleLower.includes("tempo comum")) return;
+    if (monthFilter === "solenidade" && mass.bannerTheme !== "gold" && mass.bannerTheme !== "mariano" && !titleLower.includes("solenidade") && !titleLower.includes("cristo rei")) return;
+    if (monthFilter === "advento" && mass.bannerTheme !== "purple" && !titleLower.includes("advento") && !dateKey.startsWith("2026-12")) return;
+    if (monthFilter === "novembro" && !dateKey.startsWith("2026-11")) return;
 
     // Filtro por Busca de Texto
     if (query) {
-      const matchTitle = mass.title.toLowerCase().includes(query);
+      const matchTitle = titleLower.includes(query);
       const matchDate = (mass.shortDate + " " + mass.dateFormatted).toLowerCase().includes(query);
       const matchSalmo = (mass.salmo || "").toLowerCase().includes(query);
       if (!matchTitle && !matchDate && !matchSalmo) return;
@@ -1382,14 +1405,26 @@ function renderMassesHub(monthFilter = "todos", searchQuery = "") {
 
     const isSelected = dateKey === appState.activeDateKey;
     const isMariano = mass.bannerTheme === "mariano";
+    const isGold = mass.bannerTheme === "gold";
+    const isPurple = mass.bannerTheme === "purple";
 
     let colorDotClass = "mass-hub-color-dot";
     if (isMariano) colorDotClass += " blue";
-    else if (mass.cor && mass.cor.toLowerCase().includes("branco")) colorDotClass += " gold";
-    else if (mass.cor && mass.cor.toLowerCase().includes("roxo")) colorDotClass += " purple";
+    else if (isGold || (mass.cor && mass.cor.toLowerCase().includes("branco"))) colorDotClass += " gold";
+    else if (isPurple || (mass.cor && mass.cor.toLowerCase().includes("roxo"))) colorDotClass += " purple";
+
+    let cardThemeClass = "";
+    if (isMariano) cardThemeClass = "card-mariano";
+    else if (isGold) cardThemeClass = "card-gold";
+    else if (isPurple) cardThemeClass = "card-purple";
+
+    let pillBadgeHtml = "";
+    if (isMariano) pillBadgeHtml = '<span class="mariano-pill">👑 Solenidade</span>';
+    else if (isGold) pillBadgeHtml = '<span class="gold-pill">👑 Cristo Rei</span>';
+    else if (isPurple) pillBadgeHtml = '<span class="purple-pill">🕯️ Advento</span>';
 
     const card = document.createElement("div");
-    card.className = `mass-hub-card ${isSelected ? "active" : ""} ${isMariano ? "card-mariano" : ""}`;
+    card.className = `mass-hub-card ${isSelected ? "active" : ""} ${cardThemeClass}`;
     card.innerHTML = `
       <div class="mass-hub-card-main">
         <div class="mass-hub-info">
@@ -1397,11 +1432,11 @@ function renderMassesHub(monthFilter = "todos", searchQuery = "") {
             <span class="${colorDotClass}"></span>
             <span class="mass-hub-date-badge">📅 ${mass.shortDate}</span>
             <span class="mass-hub-meta">• ${mass.ano}</span>
-            ${isMariano ? '<span class="mariano-pill">👑 Solenidade</span>' : ''}
+            ${pillBadgeHtml}
           </div>
           <h4 class="mass-hub-title">${mass.title}</h4>
           <p class="mass-hub-salmo">${mass.salmo}</p>
-          <span class="mass-hub-meta">🎵 ${mass.songs ? mass.songs.length : 10} cantos com áudio e cifras</span>
+          <span class="mass-hub-meta">🎵 ${mass.songs ? mass.songs.length : 10} cantos revisados com áudio MP3 e cifras</span>
         </div>
         <div class="mass-hub-action-col">
           <span class="mass-radio-indicator">
@@ -1444,20 +1479,20 @@ function setupMassesEvents() {
   // 3 Caminhos do Painel Superior da Missa Selecionada
   if (dom.btnHeroOpenRepertoire) {
     dom.btnHeroOpenRepertoire.addEventListener("click", () => {
-      openHomeScreenForMass(appState.activeDateKey || "2026-09-07");
+      openHomeScreenForMass(appState.activeDateKey || "2026-11-08");
     });
   }
 
   if (dom.btnHeroOpenAudio) {
     dom.btnHeroOpenAudio.addEventListener("click", () => {
-      selectMassDate(appState.activeDateKey || "2026-09-07");
+      selectMassDate(appState.activeDateKey || "2026-11-08");
       openAudioScreen(0, false);
     });
   }
 
   if (dom.btnHeroOpenStage) {
     dom.btnHeroOpenStage.addEventListener("click", () => {
-      selectMassDate(appState.activeDateKey || "2026-09-07");
+      selectMassDate(appState.activeDateKey || "2026-11-08");
       openStageMode(0, "masses");
     });
   }
@@ -1491,7 +1526,7 @@ function setupMassesEvents() {
     });
   }
 
-  // Filtro por Mês
+  // Filtro por Mês / Tempo Litúrgico
   const monthButtons = document.querySelectorAll(".month-tab-btn");
   monthButtons.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -1507,14 +1542,14 @@ function setupMassesEvents() {
     dom.navMassesTab.addEventListener("click", () => openMassesScreen());
   }
   if (dom.navHomeTabFromMasses) {
-    dom.navHomeTabFromMasses.addEventListener("click", () => openHomeScreenForMass(appState.activeDateKey || "2026-09-07"));
+    dom.navHomeTabFromMasses.addEventListener("click", () => openHomeScreenForMass(appState.activeDateKey || "2026-11-08"));
   }
   if (dom.navAudioTabFromMasses) {
     dom.navAudioTabFromMasses.addEventListener("click", () => openAudioScreen(0, false));
   }
   if (dom.navStageTabFromMasses) {
     dom.navStageTabFromMasses.addEventListener("click", () => {
-      selectMassDate(appState.activeDateKey || "2026-09-07");
+      selectMassDate(appState.activeDateKey || "2026-11-08");
       openStageMode(0, "masses");
     });
   }
@@ -1535,18 +1570,27 @@ function setupMassesEvents() {
 function extractCleanLyrics(cifraText) {
   if (!cifraText) return "";
   return cifraText
-    .split("\n")
+    .split(/\r?\n/)
     .map(line => {
-      // Remove tags de acordes entre colchetes [Dm], [G7] mantendo tags de seção como [REFRÃO]
-      if (/^\s*\[(Refrão|Estrofe|Estrofes|Solo|Todos|Conclusão|Pós-Comunhão|Final)[^\]]*\]\s*$/i.test(line.trim())) {
-        return line.trim();
-      }
-      // Pula linhas que são puramente acordes
-      const nonMarkerTokens = line.trim().split(/\s+/).filter(t => t && !/^\(?(\d+ª|bis|R\.|\*|\+)\)?$/i.test(t));
-      if (nonMarkerTokens.length > 0 && nonMarkerTokens.every(isChordToken)) {
+      const trimmed = line.trim();
+      if (!trimmed) return "";
+
+      // Remove cabeçalhos instrumentais [Intro] / [Introdução] na letra pura para cantar
+      if (/^\[(Intro|Introdução)[^\]]*\]/i.test(trimmed)) {
         return null;
       }
-      // Remove acordes inline [C]
+
+      // Mantém tags vocais de seção como [Refrão], [Refrão Final], [Estrofe 1], [Versículo], etc.
+      if (trimmed.startsWith("[") && trimmed.endsWith("]") && !isInlineBracketChordLine(trimmed)) {
+        return trimmed;
+      }
+
+      // Pula linhas que são puramente acordes
+      if (isPureChordLine(line)) {
+        return null;
+      }
+
+      // Remove acordes inline [C] quando houver
       return line.replace(/\[([A-G][b#]?[^\]]*)\]/g, "").trimEnd();
     })
     .filter(line => line !== null)
@@ -1570,7 +1614,8 @@ function loadAudioStudioTrack(index, autoPlay = false) {
 
   if (dom.deckMomentBadge) dom.deckMomentBadge.innerText = `${song.step || (validIndex + 1)}. ${song.moment}`;
   if (dom.deckSongTitle) dom.deckSongTitle.innerText = song.title;
-  if (dom.deckSongMeta) dom.deckSongMeta.innerText = `${song.author} • Tom Original: ${song.tone}`;
+  const rhythmPart = song.rhythm ? ` • Ritmo: ${song.rhythm}` : "";
+  if (dom.deckSongMeta) dom.deckSongMeta.innerText = `${song.author} • Tom Original: ${song.tone}${rhythmPart}`;
   if (dom.deckLyricsText) dom.deckLyricsText.innerText = extractCleanLyrics(song.cifra);
   if (dom.deckStatusBadge) {
     dom.deckStatusBadge.innerText = autoPlay ? "🔊 Reproduzindo Agora" : "🔊 Pronto para Ouvir";
@@ -1598,13 +1643,14 @@ function renderAudioTracksList() {
 
     const row = document.createElement("div");
     row.className = `audio-track-row ${isCurrent ? "playing-track" : ""}`;
+    const rhythmInfo = song.rhythm ? ` • ${song.rhythm}` : "";
     row.innerHTML = `
       <div class="audio-track-left">
         <div class="audio-track-num">${isPlayingThis ? "🔊" : (idx + 1)}</div>
         <div class="audio-track-info">
           <span class="audio-track-moment">${song.moment}</span>
           <div class="audio-track-title">${song.title}</div>
-          <div class="audio-track-author">${song.author} • Tom: ${song.tone}</div>
+          <div class="audio-track-author">${song.author} • Tom: ${song.tone}${rhythmInfo}</div>
         </div>
       </div>
       <button type="button" class="btn-track-play">
@@ -1807,7 +1853,7 @@ function initApp() {
   const savedDate = localStorage.getItem("liturgia_selected_mass_date");
   const initialDate = (savedDate && catalog[savedDate])
     ? savedDate
-    : (catalog["2026-10-18"] ? "2026-10-18" : (dates[0] || "2026-10-25"));
+    : (catalog["2026-11-08"] ? "2026-11-08" : (dates[0] || "2026-11-08"));
   selectMassDate(initialDate);
 
   // Verificar se o usuário já possui sessão ativa gravada
@@ -1836,7 +1882,9 @@ if (document.readyState === "loading") {
 // PREFERÊNCIAS DO MÚSICO (BOLETIM PADRÃO EM LOCALSTORAGE)
 // ========================================================
 function loadSavedBulletin() {
-  const saved = localStorage.getItem("liturgia_boletim_padrao") || "caderno-piedade";
+  // Padrão oficial da comunidade: Igreja em Oração (caderno-piedade)
+  const saved = "caderno-piedade";
+  localStorage.setItem("liturgia_boletim_padrao", saved);
   appState.activeFolheto = saved;
   if (dom.folhetoSelect) dom.folhetoSelect.value = saved;
   if (dom.defaultBulletinSelect) dom.defaultBulletinSelect.value = saved;
@@ -1874,25 +1922,29 @@ function selectMassDate(dateKey) {
     dom.audioHeaderSubtitle.innerText = `${selectedMass.shortDate}/2026 • ${shortTitle}`;
   }
 
-  // 2. Atualizar Banner da Home e Tematização Litúrgica (Verde vs Mariano)
+  // 2. Atualizar Banner da Home e Tematização Litúrgica (Verde, Ouro, Roxo, Mariano)
   if (dom.bannerTitle) dom.bannerTitle.innerText = selectedMass.title;
   if (dom.bannerDate) dom.bannerDate.innerText = `${selectedMass.dateFormatted} • ${selectedMass.ano}`;
   if (dom.bannerSalmo) dom.bannerSalmo.innerText = `Salmo: ${selectedMass.salmo}`;
   if (dom.bannerColorName) dom.bannerColorName.innerText = selectedMass.cor || "Verde Litúrgico";
 
   if (dom.liturgicalBanner) {
+    dom.liturgicalBanner.classList.remove("theme-mariano", "theme-gold", "theme-purple");
+    if (dom.bannerColorDot) {
+      dom.bannerColorDot.classList.remove("green-dot", "blue-dot", "gold-dot", "purple-dot");
+    }
+
     if (selectedMass.bannerTheme === "mariano") {
       dom.liturgicalBanner.classList.add("theme-mariano");
-      if (dom.bannerColorDot) {
-        dom.bannerColorDot.classList.remove("green-dot");
-        dom.bannerColorDot.classList.add("blue-dot");
-      }
+      if (dom.bannerColorDot) dom.bannerColorDot.classList.add("blue-dot");
+    } else if (selectedMass.bannerTheme === "gold") {
+      dom.liturgicalBanner.classList.add("theme-gold");
+      if (dom.bannerColorDot) dom.bannerColorDot.classList.add("gold-dot");
+    } else if (selectedMass.bannerTheme === "purple") {
+      dom.liturgicalBanner.classList.add("theme-purple");
+      if (dom.bannerColorDot) dom.bannerColorDot.classList.add("purple-dot");
     } else {
-      dom.liturgicalBanner.classList.remove("theme-mariano");
-      if (dom.bannerColorDot) {
-        dom.bannerColorDot.classList.remove("blue-dot");
-        dom.bannerColorDot.classList.add("green-dot");
-      }
+      if (dom.bannerColorDot) dom.bannerColorDot.classList.add("green-dot");
     }
   }
 
@@ -2015,12 +2067,13 @@ function renderHomeSongs(query = "") {
 
     const card = document.createElement("div");
     card.className = "song-card";
+    const rhythmBadge = song.rhythm ? ` • Ritmo: ${song.rhythm}` : "";
     card.innerHTML = `
       <div class="song-main-info">
         <h4 class="song-title">${index + 1}. ${song.moment}: ${song.title}</h4>
         <div class="song-meta">
           <span class="badge-tone">Tom: ${song.tone}</span>
-          <span>${song.author}</span>
+          <span>${song.author}${rhythmBadge}</span>
         </div>
       </div>
       <div class="song-card-actions">
@@ -2304,26 +2357,28 @@ function renderCurrentStageSong() {
   const fingeringTransposition = transposition - capo;
 
   // Informações do Header da Música
-  dom.stageMomentBadge.innerText = `${song.step}. Canto de ${song.moment}`;
-  dom.stageFolhetoTag.innerText = song.folhetoLabel;
+  const cleanMomentLabel = /^canto\b/i.test(song.moment) ? song.moment : song.moment;
+  dom.stageMomentBadge.innerText = `${song.step}. ${cleanMomentLabel}`;
+  dom.stageFolhetoTag.innerText = song.folhetoLabel || "Igreja em Oração";
   dom.stageSongTitle.innerText = song.title;
 
   // Tom Atual Transposto (Real que soa para a assembleia)
   const currentTone = transposeChord(song.tone, transposition);
+  const fingeringTone = capo > 0 ? transposeChord(currentTone, -capo) : currentTone;
   dom.stageToneDisplay.innerText = currentTone;
   if (dom.stageCapoDisplay) {
     dom.stageCapoDisplay.innerText = capo;
   }
 
+  const rhythmLabel = song.rhythm ? ` • Ritmo: ${song.rhythm}` : "";
   if (capo > 0) {
-    const fingeringTone = transposeChord(currentTone, -capo);
-    dom.stageSongAuthor.innerText = `${song.author} • Tom Real: ${currentTone} • Capo: ${capo}ª casa (Dedilhar em ${fingeringTone}) • Original: ${song.tone}`;
+    dom.stageSongAuthor.innerText = `${song.author}${rhythmLabel} • Tom Real: ${currentTone} • Capo: ${capo}ª casa (Forma de ${fingeringTone}) • Original: ${song.tone}`;
   } else {
-    dom.stageSongAuthor.innerText = `${song.author} • Tom: ${currentTone} • Original: ${song.tone}`;
+    dom.stageSongAuthor.innerText = `${song.author}${rhythmLabel} • Tom: ${currentTone} • Original: ${song.tone}`;
   }
 
-  // Renderizar a Cifra com os acordes dedilhados (com ou sem capo) e formatação litúrgica avançada
-  dom.stageCifraPre.innerHTML = formatCifraDisplay(song.cifra, fingeringTransposition);
+  // Renderizar a Cifra com os acordes dedilhados (com ou sem capo) e escala enarmônica exata
+  dom.stageCifraPre.innerHTML = formatCifraDisplay(song.cifra, fingeringTransposition, fingeringTone);
   dom.stageCifraPre.style.fontSize = `${appState.stageFontSize}px`;
 
   // Tratamento Híbrido de Mídia:
@@ -2708,14 +2763,15 @@ function playHarmonicArpeggio() {
     const transposition = appState.stageTranspositions[currentSong.id] || 0;
     const effectiveTone = transposeChord(currentSong.tone, transposition);
 
-    // Mapeamento de frequência básica
+    // Mapeamento de frequência básica (sustenidos e bemóis)
     const noteFreqs = {
-      "C": 261.63, "C#": 277.18, "D": 293.66, "D#": 311.13,
-      "E": 329.63, "F": 349.23, "F#": 369.99, "G": 392.00,
-      "G#": 415.30, "A": 440.00, "A#": 466.16, "B": 493.88
+      "C": 261.63, "C#": 277.18, "Db": 277.18, "D": 293.66, "D#": 311.13, "Eb": 311.13,
+      "E": 329.63, "F": 349.23, "F#": 369.99, "Gb": 369.99, "G": 392.00,
+      "G#": 415.30, "Ab": 415.30, "A": 440.00, "A#": 466.16, "Bb": 466.16, "B": 493.88
     };
 
-    const rootNote = effectiveTone.replace(/m|7/g, "");
+    const rootMatch = effectiveTone.match(/^[A-G][#b]?/);
+    const rootNote = rootMatch ? rootMatch[0] : "G";
     const baseFreq = noteFreqs[rootNote] || 392.00;
 
     // Toca acorde suave arpejado (fundamental, terça, quinta)
@@ -2747,38 +2803,60 @@ function playHarmonicArpeggio() {
 // ========================================================
 function openSwapModal() {
   const currentSong = appState.activeMissa[appState.currentStageIndex];
-  dom.swapModalTitle.innerText = `Trocar Canto de ${currentSong.moment}`;
+  dom.swapModalTitle.innerText = `Trocar: ${currentSong.moment}`;
   dom.swapOptionsContainer.innerHTML = "";
 
-  const alternatives = swapAlternatives[currentSong.moment] || [
-    { title: "Cântico Tradicional Alternativo", author: "Hinário Diocesano", tone: "C", folhetoLabel: "Repertório Local", cifra: "[C] [G] [Am] [F]\nCanto alternativo sugerido..." },
-    { title: "Canto Comunitário da Paróquia", author: "Comunidade", tone: "G", folhetoLabel: "Repertório Local", cifra: "[G] [D] [Em] [C]\nGlória e louvor ao Senhor..." }
-  ];
+  const homologatedMap = (typeof cantosAlternativosHomologados !== "undefined" && cantosAlternativosHomologados)
+    ? cantosAlternativosHomologados
+    : {};
+
+  let alternatives = homologatedMap[currentSong.moment] || swapAlternatives[currentSong.moment];
+  if (!alternatives && currentSong.moment.toLowerCase().includes("louvor")) {
+    alternatives = homologatedMap["Hino de Louvor"] || swapAlternatives["Glória"];
+  } else if (!alternatives && (currentSong.moment.toLowerCase().startsWith("santo") || currentSong.moment.toLowerCase().includes("eucarística"))) {
+    alternatives = homologatedMap["Santo / Aclamação Eucarística"] || swapAlternatives["Santo"];
+  } else if (!alternatives && currentSong.moment.toLowerCase().includes("abertura")) {
+    alternatives = swapAlternatives["Entrada"];
+  } else if (!alternatives && currentSong.moment.toLowerCase().includes("comunh")) {
+    alternatives = swapAlternatives["Comunhão"];
+  }
+
+  if (!alternatives || alternatives.length === 0) {
+    alternatives = [
+      { title: "Cântico Tradicional Alternativo", author: "Hinário Diocesano", tone: "C", folhetoLabel: "Repertório Local", cifra: "C  G  Am  F\nCanto alternativo sugerido..." },
+      { title: "Canto Comunitário da Paróquia", author: "Comunidade", tone: "G", folhetoLabel: "Repertório Local", cifra: "G  D  Em  C\nGlória e louvor ao Senhor..." }
+    ];
+  }
 
   alternatives.forEach(alt => {
     const card = document.createElement("div");
     card.className = "swap-item-card";
+    const audioBadge = alt.audioFile ? " • 🎧 Áudio MP3" : "";
     card.innerHTML = `
       <div class="swap-item-info">
         <h4>${alt.title}</h4>
-        <p>${alt.author} • Tom sugerido: ${alt.tone} • ${alt.folhetoLabel}</p>
+        <p>${alt.author} • Tom: ${alt.tone} • ${alt.folhetoLabel}${audioBadge}</p>
       </div>
       <button class="btn-select-swap">Escolher</button>
     `;
 
     card.addEventListener("click", () => {
-      // Substituir a música pontualmente mantendo as demais da missa
+      stopRehearsalAudio();
+      // Substituir a música pontualmente mantendo as demais da missa (preservando áudio e ritmo)
       appState.activeMissa[appState.currentStageIndex] = {
         ...currentSong,
         title: alt.title,
         author: alt.author,
+        rhythm: alt.rhythm || currentSong.rhythm || "",
         tone: alt.tone,
+        audioFile: alt.audioFile !== undefined ? alt.audioFile : "",
         folhetoLabel: `${alt.folhetoLabel} (Personalizado)`,
         cifra: alt.cifra
       };
 
-      // Resetar transposição da música substituída
+      // Resetar transposição e capo da música substituída
       appState.stageTranspositions[currentSong.id] = 0;
+      appState.stageCapos[currentSong.id] = 0;
 
       dom.swapModal.classList.add("hidden");
       renderMomentsStepper();
@@ -2796,82 +2874,131 @@ function openSwapModal() {
 }
 
 // ========================================================
-// FUNÇÕES AUXILIARES DE TRANSPOSIÇÃO
+// FUNÇÕES AUXILIARES DE TRANSPOSIÇÃO & CIFRAS (PADRÃO HTML REVISADO)
 // ========================================================
-function transposeChord(rootNote, semitones) {
-  const noteMatch = rootNote.match(/^[A-G][#b]?/);
-  if (!noteMatch) return rootNote;
-
-  const originalRoot = noteMatch[0];
-  const suffix = rootNote.slice(originalRoot.length);
-
-  let normalizedRoot = originalRoot;
-  if (normalizedRoot === "Bb") normalizedRoot = "A#";
-  if (normalizedRoot === "Db") normalizedRoot = "C#";
-  if (normalizedRoot === "Eb") normalizedRoot = "D#";
-  if (normalizedRoot === "Gb") normalizedRoot = "F#";
-  if (normalizedRoot === "Ab") normalizedRoot = "G#";
-
-  const currentIndex = chromaticScale.indexOf(normalizedRoot);
-  if (currentIndex === -1) return rootNote;
-
-  let newIndex = (currentIndex + semitones) % 12;
-  if (newIndex < 0) newIndex += 12;
-
-  return chromaticScale[newIndex] + suffix;
+function getScaleForRoot(rootKey) {
+  if (!rootKey) return SCALE_SHARP;
+  const cleanKey = rootKey.trim();
+  if (FLAT_KEYS.includes(cleanKey) || cleanKey.includes("b")) {
+    return SCALE_FLAT;
+  }
+  return SCALE_SHARP;
 }
 
-function transposeChordString(chordString, semitones) {
+function transposeChord(rootNote, semitones, preferScale = null) {
+  if (!rootNote || semitones === 0) return rootNote;
+  const match = rootNote.trim().match(/^([A-G][#b]?)(.*)$/);
+  if (!match) return rootNote;
+
+  const originalRoot = match[1];
+  const suffix = match[2];
+  if (!(originalRoot in NOTE_MAP)) return rootNote;
+
+  const currentIndex = NOTE_MAP[originalRoot];
+  const newIndex = (currentIndex + semitones + 120) % 12;
+  const scale = preferScale || ((semitones < 0 || FLAT_KEYS.includes(rootNote.trim()) || originalRoot.includes("b")) ? SCALE_FLAT : SCALE_SHARP);
+  return scale[newIndex] + suffix;
+}
+
+function transposeChordString(chordString, semitones, preferScale = null) {
+  if (!chordString || semitones === 0) return chordString;
   const parts = chordString.split("/");
-  const mainChord = transposeChord(parts[0], semitones);
+  const mainChord = transposeChord(parts[0], semitones, preferScale);
   if (parts.length > 1) {
-    const bassNote = transposeChord(parts[1], semitones);
+    const bassNote = transposeChord(parts[1], semitones, preferScale);
     return `${mainChord}/${bassNote}`;
   }
   return mainChord;
 }
 
-// Reconhecimento de acordes musicais (maiores, menores, com sétima, inversões, etc.)
+// Reconhecimento de acordes musicais (incluindo acordes alterados como Am7(b5), D7/F#, Bm/D, Edim, Gm6, Dsus4)
+const CHORD_TOKEN_REGEX = /^[A-G][b#]?(?:(?:m|maj|min|dim|aug|sus[24]?|add\d+|º|°|\+|\d+)+)?(?:\([b#]?\d+(?:[,/][b#]?\d+)*\))?(?:\/[A-G][b#]?)?$/;
+const CHORD_GLOBAL_REGEX = /(?<![A-Za-z0-9#b])([A-G][b#]?(?:(?:m|maj|min|dim|aug|sus[24]?|add\d+|º|°|\+|\d+)+)?(?:\([b#]?\d+(?:[,/][b#]?\d+)*\))?(?:\/[A-G][b#]?)?)(?![A-Za-z0-9#b])/g;
+
 function isChordToken(token) {
-  return /^[A-G][b#]?(?:m|maj|min|dim|aug|sus[24]?|add\d+|\d+)*(?:\/[A-G][b#]?)?$/.test(token);
+  if (!token) return false;
+  const cleaned = token.replace(/^[|,]+|[|,]+$/g, "");
+  return CHORD_TOKEN_REGEX.test(cleaned);
 }
 
-// Formatação e transposição completa da cifra
-function formatCifraDisplay(cifraText, transposition = 0) {
+function isInlineBracketChordLine(line) {
+  const bracketMatches = line.match(/\[([^\]]+)\]/g);
+  if (!bracketMatches) return false;
+  return bracketMatches.some(b => CHORD_TOKEN_REGEX.test(b.slice(1, -1).trim()));
+}
+
+function isPureChordLine(line) {
+  const trimmed = (line || "").trim();
+  if (!trimmed) return false;
+  if (trimmed.startsWith("[") || /^Solo:/i.test(trimmed) || /^Todos:/i.test(trimmed) || /^\d+\./.test(trimmed)) {
+    return false;
+  }
+
+  const tokens = trimmed.split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return false;
+
+  let chordCount = 0;
+  let wordCount = 0;
+
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (/^(?:\||\/|\(?(\d+ª|\d+x|bis|R\.|D\.C\.|\*|\+)\)?)$/i.test(t)) {
+      continue;
+    }
+    // Remove parênteses externos apenas se envolverem o acorde inteiro, ex: (G7)
+    const unwrapped = (t.startsWith("(") && t.endsWith(")") && !t.slice(1, -1).includes("("))
+      ? t.slice(1, -1)
+      : t.replace(/[,;:]+$/g, "");
+
+    if (isChordToken(unwrapped)) {
+      chordCount++;
+    } else {
+      wordCount++;
+    }
+  }
+
+  return chordCount > 0 && wordCount === 0;
+}
+
+// Formatação e transposição completa da cifra (fiel ao padrão HTML revisado)
+function formatCifraDisplay(cifraText, transposition = 0, targetKey = "") {
   if (!cifraText) return "";
+  const preferScale = getScaleForRoot(targetKey);
 
-  return cifraText.split("\n").map(line => {
-    // 1. Tag de Seção Litúrgica em linha isolada: [Refrão], [Estrofe 1], [Solo], etc.
-    if (/^\s*\[(Refrão|Estrofe|Estrofes|Solo|Todos|Conclusão|Pós-Comunhão|Final)[^\]]*\]\s*$/i.test(line.trim())) {
-      return `<span class="cifra-section-tag">${line.trim()}</span>`;
-    }
+  return cifraText.split(/\r?\n/).map(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return "";
 
-    // 2. Introdução [Intro] com acordes na mesma linha
-    if (/^\s*\[(Intro|Introdução)[^\]]*\]/i.test(line)) {
-      const tagMatch = line.match(/^(\s*\[[^\]]+\])(.*)$/);
-      if (tagMatch) {
-        const tag = `<span class="cifra-section-tag">${tagMatch[1]}</span>`;
-        const rest = tagMatch[2].replace(/\b([A-G][b#]?(?:m|maj|min|dim|aug|sus[24]?|add\d+|\d+)*(?:\/[A-G][b#]?)?)\b/g, m => {
-          const trans = transposeChordString(m, transposition);
-          return `<span class="cifra-chord">${trans}</span>`;
-        });
-        return tag + rest;
-      }
-    }
-
-    // 3. Acordes entre colchetes embutidos: [G], [Am7], [D/F#]
-    if (/\[[A-G][b#]?[^\]]*\]/.test(line)) {
-      return line.replace(/\[([A-G][b#]?[^\]]*)\]/g, (match, chord) => {
-        const transChord = transposeChordString(chord, transposition);
-        return `<span class="cifra-chord">${transChord}</span>`;
+    // 1. Acordes entre colchetes embutidos (formato legado): [G], [Am7], [D/F#]
+    if (isInlineBracketChordLine(line)) {
+      return line.replace(/\[([^\]]+)\]/g, (match, inner) => {
+        if (CHORD_TOKEN_REGEX.test(inner.trim())) {
+          const transChord = transposeChordString(inner.trim(), transposition, preferScale);
+          return `<span class="cifra-chord">${transChord}</span>`;
+        }
+        return `<span class="cifra-section-tag">${match}</span>`;
       });
     }
 
-    // 4. Linha de acordes tradicionais sem colchetes (ex: "        Em          Bm           Am    D")
-    const nonMarkerTokens = line.trim().split(/\s+/).filter(t => t && !/^\(?(\d+ª|bis|R\.|\*|\+)\)?$/i.test(t));
-    if (nonMarkerTokens.length > 0 && nonMarkerTokens.every(isChordToken)) {
-      return line.replace(/\b([A-G][b#]?(?:m|maj|min|dim|aug|sus[24]?|add\d+|\d+)*(?:\/[A-G][b#]?)?)\b/g, m => {
-        const trans = transposeChordString(m, transposition);
+    // 2. Tags de Seção Litúrgica: [Intro], [Refrão], [Refrão Final], [Estrofe 1], [Versículo], etc.
+    if (trimmed.startsWith("[")) {
+      const tagMatch = line.match(/^(\s*\[[^\]]+\])(.*)$/);
+      if (tagMatch) {
+        const tag = `<span class="cifra-section-tag">${tagMatch[1].trim()}</span>`;
+        const rest = tagMatch[2];
+        if (!rest.trim()) return tag;
+        const restFormatted = rest.replace(CHORD_GLOBAL_REGEX, m => {
+          const trans = transposeChordString(m, transposition, preferScale);
+          return `<span class="cifra-chord">${trans}</span>`;
+        });
+        return tag + restFormatted;
+      }
+    }
+
+    // 3. Linha de acordes tradicionais acima da letra (incluindo Am7(b5), D7/F#, Bm/D, Gm6, etc.)
+    if (isPureChordLine(line)) {
+      return line.replace(CHORD_GLOBAL_REGEX, m => {
+        const trans = transposeChordString(m, transposition, preferScale);
         return `<span class="cifra-chord">${trans}</span>`;
       });
     }
@@ -2911,17 +3038,18 @@ function exportMassRepertoireToPdf() {
     const capo = appState.stageCapos[song.id] || 0;
     const fingeringTransposition = transposition - capo;
     const effectiveRealTone = transposeChord(song.tone, transposition);
+    const fingeringTone = capo > 0 ? transposeChord(effectiveRealTone, -capo) : effectiveRealTone;
 
     let toneInfoText = `Tom: ${effectiveRealTone}`;
     if (capo > 0) {
-      const fingeringTone = transposeChord(effectiveRealTone, -capo);
-      toneInfoText += ` (Capo ${capo}ª casa • Dedilhar em ${fingeringTone})`;
+      toneInfoText += ` (Capo ${capo}ª casa • Forma de ${fingeringTone})`;
     }
     if (transposition !== 0) {
       toneInfoText += ` • Original: ${song.tone}`;
     }
 
-    const formattedCifra = formatCifraDisplay(song.cifra, fingeringTransposition);
+    const formattedCifra = formatCifraDisplay(song.cifra, fingeringTransposition, fingeringTone);
+    const rhythmPart = song.rhythm ? `<span>• Ritmo: ${song.rhythm}</span>` : "";
 
     return `
       <section class="pdf-song-block">
@@ -2931,6 +3059,7 @@ function exportMassRepertoireToPdf() {
           <div class="pdf-song-meta">
             <span class="pdf-tone-badge"><strong>${toneInfoText}</strong></span>
             <span>${song.author || "Comunidade"}</span>
+            ${rhythmPart}
             <span>• ${song.folhetoLabel || "Igreja em Oração"}</span>
           </div>
         </div>
