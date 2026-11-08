@@ -40,6 +40,10 @@ Este documento consolida o raio-x completo do protótipo desenvolvido, as decis�
   - **Fallback Acústico Harmônico**: síntese sonora em tempo real via Web Audio API tocando arpejo suave na fundamental do tom da música quando não houver arquivo MP3 local.
 - **Troca Pontual de Cantos [⇄ Trocar]**:
   - Permite ao ministério substituir um momento específico da celebração por cânticos alternativos homologados sem perder o restante do roteiro.
+- **Editor Interativo de Cifras e Letras [✏️ Editar Cifra]**:
+  - **Modo Visual (`🎯 Mover Cifras`)**: permite arrastar acordes horizontalmente com o dedo/mouse, alinhar acordes tocando diretamente na sílaba da letra abaixo, mover com botões (`⏪ -3`, `◀ -1`, `+1 ▶`, `+3 ⏩`) ou setas do teclado, trocar nota (`✏️ Trocar`), remover acorde (`🗑️`), inserir `+ acorde` na linha ou `+ cifra acima` de frases sem cifra.
+  - **Modo Texto (`📝 Editar Letra e Cifra`)**: área de edição completa em fonte monoespaçada para ajustar letra e acordes livremente.
+  - **Persistência Normalizada e Restauração**: ao clicar em `✅ Salvar Ajustes`, a cifra é normalizada para o tom original da música e salva em `localStorage` (`liturgia_custom_cifras_{data}`), exibindo o selo `✏️ Ajustado`, mantendo compatibilidade com `Tom +/-`, `Capo`, `Exportar PDF` e `↩️ Restaurar Original`.
 - **Tipografia e Visual de Cifra**:
   - Identificação e destaque de seções litúrgicas: `[Refrão]`, `[Estrofe]`, `[Solo]`, `[Todos]`, `[Intro]`.
   - Ajuste rápido do tamanho de texto (A+ / A-).

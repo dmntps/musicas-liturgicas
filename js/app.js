@@ -678,6 +678,10 @@ const dom = {
   btnCapoDown: document.getElementById("btnCapoDown"),
   btnStageFontUp: document.getElementById("btnStageFontUp"),
   btnStageFontDown: document.getElementById("btnStageFontDown"),
+  btnToggleChordEditor: document.getElementById("btnToggleChordEditor"),
+  stageEditedBadge: document.getElementById("stageEditedBadge"),
+  stageEditorPanel: document.getElementById("stageEditorPanel"),
+  stageEditorBody: document.getElementById("stageEditorBody"),
   btnSaveTone: document.getElementById("btnSaveTone"),
   appToast: document.getElementById("appToast"),
 
@@ -1912,6 +1916,18 @@ function selectMassDate(dateKey) {
   localStorage.setItem("liturgia_selected_mass_date", dateKey);
   appState.activeMissa = JSON.parse(JSON.stringify(selectedMass.songs));
 
+  // Preservar cifra original de fábrica e aplicar ajustes salvos pelo músico nesta celebração
+  const customCifras = getCustomCifrasMap(dateKey);
+  appState.activeMissa.forEach(s => {
+    s.factoryCifra = s.cifra;
+    if (customCifras[s.id]) {
+      s.cifra = customCifras[s.id];
+    }
+  });
+  if (typeof closeStageSongEditor === "function") {
+    closeStageSongEditor();
+  }
+
   const shortTitle = selectedMass.title.split("—")[0].trim();
 
   // 1. Atualizar Subtítulos dos Headers (Home e Audio)
@@ -2068,11 +2084,15 @@ function renderHomeSongs(query = "") {
     const card = document.createElement("div");
     card.className = "song-card";
     const rhythmBadge = song.rhythm ? ` • Ritmo: ${song.rhythm}` : "";
+    const editedBadgeHtml = isStageSongCustomized(song)
+      ? `<span class="badge-edited-pill">✏️ Ajustado</span>`
+      : "";
     card.innerHTML = `
       <div class="song-main-info">
         <h4 class="song-title">${index + 1}. ${song.moment}: ${song.title}</h4>
         <div class="song-meta">
           <span class="badge-tone">Tom: ${song.tone}</span>
+          ${editedBadgeHtml}
           <span>${song.author}${rhythmBadge}</span>
         </div>
       </div>
@@ -2136,6 +2156,13 @@ function setupStageEvents() {
     dom.btnSaveTone.addEventListener("click", saveCurrentStageTone);
   }
 
+  // Botão de Edição Interativa de Letra e Cifra (🎯 Mover Cifras / 📝 Editar Letra e Cifra)
+  if (dom.btnToggleChordEditor) {
+    dom.btnToggleChordEditor.addEventListener("click", () => {
+      toggleStageSongEditor();
+    });
+  }
+
   // Alternância do Vídeo do YouTube (Recolher / Expandir Miniplayer)
   if (dom.btnToggleVideo) {
     dom.btnToggleVideo.addEventListener("click", () => {
@@ -2149,9 +2176,13 @@ function setupStageEvents() {
 
   // Tamanho de Fonte
   dom.btnStageFontUp.addEventListener("click", () => {
-    if (appState.stageFontSize < 24) {
+    if (appState.stageFontSize < 26) {
       appState.stageFontSize += 2;
       dom.stageCifraPre.style.fontSize = `${appState.stageFontSize}px`;
+      const visualWrap = document.getElementById("stageVisualWrap");
+      if (visualWrap) visualWrap.style.fontSize = `${appState.stageFontSize}px`;
+      const taEl = document.getElementById("stageEditorTextarea");
+      if (taEl) taEl.style.fontSize = `${appState.stageFontSize}px`;
     }
   });
 
@@ -2159,6 +2190,10 @@ function setupStageEvents() {
     if (appState.stageFontSize > 10) {
       appState.stageFontSize -= 2;
       dom.stageCifraPre.style.fontSize = `${appState.stageFontSize}px`;
+      const visualWrap = document.getElementById("stageVisualWrap");
+      if (visualWrap) visualWrap.style.fontSize = `${appState.stageFontSize}px`;
+      const taEl = document.getElementById("stageEditorTextarea");
+      if (taEl) taEl.style.fontSize = `${appState.stageFontSize}px`;
     }
   });
 
@@ -2216,6 +2251,9 @@ function setupStageEvents() {
 function openStageMode(songIndex, originScreen = null) {
   stopRehearsalAudio();
   stopAutoScroll();
+  if (typeof closeStageSongEditor === "function") {
+    closeStageSongEditor();
+  }
 
   if (originScreen) {
     appState.stageOriginScreen = originScreen;
@@ -2361,6 +2399,9 @@ function renderCurrentStageSong() {
   dom.stageMomentBadge.innerText = `${song.step}. ${cleanMomentLabel}`;
   dom.stageFolhetoTag.innerText = song.folhetoLabel || "Igreja em Oração";
   dom.stageSongTitle.innerText = song.title;
+  if (dom.stageEditedBadge) {
+    dom.stageEditedBadge.classList.toggle("hidden", !isStageSongCustomized(song));
+  }
 
   // Tom Atual Transposto (Real que soa para a assembleia)
   const currentTone = transposeChord(song.tone, transposition);
@@ -2377,9 +2418,27 @@ function renderCurrentStageSong() {
     dom.stageSongAuthor.innerText = `${song.author}${rhythmLabel} • Tom: ${currentTone} • Original: ${song.tone}`;
   }
 
-  // Renderizar a Cifra com os acordes dedilhados (com ou sem capo) e escala enarmônica exata
-  dom.stageCifraPre.innerHTML = formatCifraDisplay(song.cifra, fingeringTransposition, fingeringTone);
-  dom.stageCifraPre.style.fontSize = `${appState.stageFontSize}px`;
+  // Se o editor interativo de cifras estiver aberto para esta música, transpor também os acordes em edição
+  if (stageEditorState && stageEditorState.active && stageEditorState.songId === song.id) {
+    const deltaShift = fingeringTransposition - stageEditorState.baseDisplayedSemitones;
+    if (deltaShift !== 0) {
+      if (stageEditorState.mode === "text") {
+        const ta = document.getElementById("stageEditorTextarea");
+        if (ta) stageEditorState.lines = ta.value.split(/\r?\n/);
+      }
+      const nextScale = getScaleForRoot(fingeringTone);
+      stageEditorState.lines = stageEditorState.lines.map(l =>
+        isPureChordLine(l) ? transposeLineTokens(l, deltaShift, nextScale) : l
+      );
+      stageEditorState.baseDisplayedSemitones = fingeringTransposition;
+      stageEditorState.baseShapeKey = fingeringTone;
+      renderStageEditor();
+    }
+  } else {
+    // Renderizar a Cifra com os acordes dedilhados (com ou sem capo) e escala enarmônica exata
+    dom.stageCifraPre.innerHTML = formatCifraDisplay(song.cifra, fingeringTransposition, fingeringTone);
+    dom.stageCifraPre.style.fontSize = `${appState.stageFontSize}px`;
+  }
 
   // Tratamento Híbrido de Mídia:
   // 1. Cântico com Vídeo do YouTube (O Domingo / Paulus / Streaming)
@@ -3008,10 +3067,702 @@ function formatCifraDisplay(cifraText, transposition = 0, targetKey = "") {
 }
 
 // ========================================================
+// ✏️ MOTOR DE EDIÇÃO INTERATIVA DE LETRAS E CIFRAS (PADRÃO HTML REVISADO)
+// Modos: 🎯 Mover Cifras (Arraste/Setas/Toque na Sílaba) e 📝 Editar Letra e Cifra
+// ========================================================
+let stageEditorState = {
+  active: false,
+  songId: null,
+  mode: "visual", // "visual" | "text"
+  lines: [],
+  baseDisplayedSemitones: 0,
+  baseShapeKey: "C",
+  selectedLine: null,
+  selectedIdx: null,
+  dialogMode: null, // null | "rename" | "add"
+  dialogLine: null,
+  confirmRestore: false
+};
+
+let stagePointerDrag = null;
+
+function getCustomCifrasStorageKey(dateKey = appState.activeDateKey) {
+  return `liturgia_custom_cifras_${dateKey || "2026-11-08"}`;
+}
+
+function getCustomCifrasMap(dateKey = appState.activeDateKey) {
+  try {
+    const raw = localStorage.getItem(getCustomCifrasStorageKey(dateKey));
+    return raw ? (JSON.parse(raw) || {}) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveCustomCifrasMap(map, dateKey = appState.activeDateKey) {
+  try {
+    localStorage.setItem(getCustomCifrasStorageKey(dateKey), JSON.stringify(map || {}));
+  } catch (e) {}
+}
+
+function isStageSongCustomized(song) {
+  if (!song) return false;
+  if (song.factoryCifra && song.cifra !== song.factoryCifra) return true;
+  const map = getCustomCifrasMap(appState.activeDateKey);
+  return Boolean(map[song.id] && (!song.factoryCifra || map[song.id] !== song.factoryCifra));
+}
+
+function escapeEditorHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function parseChordLineTokens(line) {
+  const tokens = [];
+  const re = /\S+/g;
+  let m;
+  while ((m = re.exec(line || "")) !== null) {
+    tokens.push({
+      col: m.index,
+      text: m[0]
+    });
+  }
+  return tokens;
+}
+
+function serializeChordLineTokens(tokens) {
+  if (!tokens || tokens.length === 0) return "";
+  let out = "";
+  for (let i = 0; i < tokens.length; i++) {
+    const minCol = (i === 0) ? 0 : (out.length + 1);
+    const targetCol = Math.max(minCol, tokens[i].col);
+    if (targetCol > out.length) {
+      out += " ".repeat(targetCol - out.length);
+    }
+    out += tokens[i].text;
+  }
+  return out;
+}
+
+function transposeChordTokenSafely(rawToken, semitones, preferScale) {
+  if (!rawToken || semitones === 0) return rawToken;
+  return String(rawToken).replace(CHORD_GLOBAL_REGEX, m => transposeChordString(m, semitones, preferScale));
+}
+
+function transposeLineTokens(line, semitones, preferScale) {
+  if (!isPureChordLine(line) || semitones === 0) return line;
+  const tokens = parseChordLineTokens(line);
+  const transposed = tokens.map(tok => ({
+    col: tok.col,
+    text: transposeChordTokenSafely(tok.text, semitones, preferScale)
+  }));
+  return serializeChordLineTokens(transposed);
+}
+
+function transposeFullCifraText(text, semitones, preferScale) {
+  if (!text || semitones === 0) return text;
+  return text.split(/\r?\n/).map(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return "";
+    if (trimmed.startsWith("[")) {
+      const tagMatch = line.match(/^(\s*\[[^\]]+\])(.*)$/);
+      if (tagMatch && tagMatch[2].trim()) {
+        return tagMatch[1] + tagMatch[2].replace(CHORD_GLOBAL_REGEX, m => transposeChordString(m, semitones, preferScale));
+      }
+      return line;
+    }
+    if (isPureChordLine(line)) {
+      return transposeLineTokens(line, semitones, preferScale);
+    }
+    return line;
+  }).join("\n");
+}
+
+function toggleStageSongEditor() {
+  const song = appState.activeMissa[appState.currentStageIndex];
+  if (!song) return;
+
+  if (stageEditorState.active && stageEditorState.songId === song.id) {
+    closeStageSongEditor();
+    return;
+  }
+
+  stopAutoScroll();
+
+  const transposition = appState.stageTranspositions[song.id] || 0;
+  const capo = appState.stageCapos[song.id] || 0;
+  const displayedSemitones = transposition - capo;
+  const soundingKey = transposeChord(song.tone, transposition);
+  const shapeKey = capo > 0 ? transposeChord(soundingKey, -capo) : soundingKey;
+  const displayedText = transposeFullCifraText(song.cifra, displayedSemitones, getScaleForRoot(shapeKey));
+
+  stageEditorState = {
+    active: true,
+    songId: song.id,
+    mode: "visual",
+    lines: displayedText.split(/\r?\n/),
+    baseDisplayedSemitones: displayedSemitones,
+    baseShapeKey: shapeKey,
+    selectedLine: null,
+    selectedIdx: null,
+    dialogMode: null,
+    dialogLine: null,
+    confirmRestore: false
+  };
+
+  if (dom.btnToggleChordEditor) {
+    dom.btnToggleChordEditor.classList.add("editing-active");
+    dom.btnToggleChordEditor.innerHTML = `<span>✏️ Editando...</span>`;
+  }
+
+  renderStageEditor();
+  showToast("✏️ Modo de edição ativado! Arraste ou toque nos acordes.");
+}
+
+function closeStageSongEditor() {
+  const wasActive = stageEditorState && stageEditorState.active;
+  stageEditorState.active = false;
+  stageEditorState.songId = null;
+  stageEditorState.dialogMode = null;
+
+  if (dom.stageEditorPanel) {
+    dom.stageEditorPanel.classList.add("hidden");
+    dom.stageEditorPanel.innerHTML = "";
+  }
+  if (dom.stageEditorBody) {
+    dom.stageEditorBody.classList.add("hidden");
+    dom.stageEditorBody.innerHTML = "";
+  }
+  if (dom.stageCifraPre) {
+    dom.stageCifraPre.classList.remove("hidden");
+  }
+  if (dom.btnToggleChordEditor) {
+    dom.btnToggleChordEditor.classList.remove("editing-active");
+    dom.btnToggleChordEditor.innerHTML = `<span>✏️ Editar Cifra</span>`;
+  }
+
+  if (wasActive && appState.activeMissa && appState.activeMissa[appState.currentStageIndex]) {
+    renderCurrentStageSong();
+  }
+}
+
+function switchStageEditorMode(mode) {
+  if (!stageEditorState.active || stageEditorState.mode === mode) return;
+  if (stageEditorState.mode === "text") {
+    const ta = document.getElementById("stageEditorTextarea");
+    if (ta) {
+      stageEditorState.lines = ta.value.split(/\r?\n/);
+    }
+  }
+  stageEditorState.mode = mode;
+  stageEditorState.selectedLine = null;
+  stageEditorState.selectedIdx = null;
+  stageEditorState.dialogMode = null;
+  renderStageEditor();
+}
+
+function renderStageEditor() {
+  const song = appState.activeMissa[appState.currentStageIndex];
+  if (!song || !dom.stageEditorPanel || !dom.stageEditorBody) return;
+
+  dom.stageEditorPanel.classList.remove("hidden");
+  dom.stageEditorPanel.innerHTML = buildStageEditorToolbarHtml(song);
+
+  if (dom.stageCifraPre) dom.stageCifraPre.classList.add("hidden");
+  dom.stageEditorBody.classList.remove("hidden");
+
+  if (stageEditorState.mode === "visual") {
+    dom.stageEditorBody.innerHTML = buildStageVisualEditorSurfaceHtml();
+  } else {
+    const joined = stageEditorState.lines.join("\n");
+    dom.stageEditorBody.innerHTML =
+      `<textarea class="cifra-editor-textarea" id="stageEditorTextarea" spellcheck="false" style="font-size:${appState.stageFontSize}px;">${escapeEditorHtml(joined)}</textarea>` +
+      `<div class="editor-hint-footer">💡 Dica: Use espaços para posicionar os acordes exatamente sobre as sílabas. Você pode alternar de volta para "🎯 Mover Cifras" a qualquer momento!</div>`;
+  }
+}
+
+function buildStageEditorToolbarHtml(song) {
+  const isVisual = (stageEditorState.mode === "visual");
+  let selectedToken = null;
+  if (isVisual && stageEditorState.selectedLine !== null && stageEditorState.selectedIdx !== null) {
+    const lineStr = stageEditorState.lines[stageEditorState.selectedLine] || "";
+    const toks = parseChordLineTokens(lineStr);
+    if (toks[stageEditorState.selectedIdx]) {
+      selectedToken = toks[stageEditorState.selectedIdx];
+    }
+  }
+
+  const hasSel = Boolean(selectedToken);
+  const disAttr = hasSel ? "" : "disabled";
+  const customized = isStageSongCustomized(song);
+
+  let dialogHtml = "";
+  if (stageEditorState.dialogMode === "rename" && hasSel) {
+    dialogHtml =
+      `<span class="inline-chord-Dialog">` +
+        `<input type="text" id="stageInlineChordInput" class="inline-chord-input" value="${escapeEditorHtml(selectedToken.text)}" placeholder="Ex: B7" onkeydown="onStageInlineChordKey(event)" />` +
+        `<button type="button" class="btn-nudge" onclick="confirmStageInlineChordDialog()">OK</button>` +
+        `<button type="button" class="btn-nudge" onclick="cancelStageInlineChordDialog()">✖</button>` +
+      `</span>`;
+  } else if (stageEditorState.dialogMode === "add") {
+    dialogHtml =
+      `<span class="inline-chord-Dialog">` +
+        `<input type="text" id="stageInlineChordInput" class="inline-chord-input" value="" placeholder="Novo (ex: G7)" onkeydown="onStageInlineChordKey(event)" />` +
+        `<button type="button" class="btn-nudge" onclick="confirmStageInlineChordDialog()">Inserir</button>` +
+        `<button type="button" class="btn-nudge" onclick="cancelStageInlineChordDialog()">✖</button>` +
+      `</span>`;
+  }
+
+  const moverRowHtml = isVisual ? (
+    `<div class="editor-mover-bar">` +
+      `<div class="mover-status" id="stageMoverStatus">` +
+        (hasSel
+          ? (`Acorde selecionado: <span class="selected-chord-pill">${escapeEditorHtml(selectedToken.text)}</span> <span style="opacity:0.85;">(Coluna ${selectedToken.col + 1} • ou toque na sílaba abaixo!)</span>`)
+          : `👆 <span>Arraste qualquer acorde para os lados, ou toque nele para usar as setas:</span>`) +
+      `</div>` +
+      `<div class="mover-controls">` +
+        dialogHtml +
+        `<button type="button" class="btn-nudge" ${disAttr} onclick="nudgeStageSelectedChord(-3)" title="Mover 3 espaços p/ esquerda">⏪ -3</button>` +
+        `<button type="button" class="btn-nudge" ${disAttr} onclick="nudgeStageSelectedChord(-1)" title="Mover 1 espaço p/ esquerda (Seta ←)">◀ -1</button>` +
+        `<button type="button" class="btn-nudge" ${disAttr} onclick="nudgeStageSelectedChord(1)" title="Mover 1 espaço p/ direita (Seta →)">+1 ▶</button>` +
+        `<button type="button" class="btn-nudge" ${disAttr} onclick="nudgeStageSelectedChord(3)" title="Mover 3 espaços p/ direita">+3 ⏩</button>` +
+        `<button type="button" class="btn-nudge" ${disAttr} onclick="openStageRenameChordDialog()" title="Trocar nota/acorde">✏️ Trocar</button>` +
+        `<button type="button" class="btn-nudge btn-nudge-danger" ${disAttr} onclick="deleteStageSelectedChord()" title="Remover este acorde">🗑️</button>` +
+      `</div>` +
+    `</div>`
+  ) : "";
+
+  const restoreBtnHtml = customized ? (
+    stageEditorState.confirmRestore
+      ? `<button type="button" class="btn-editor-restore" onclick="restoreFactoryStageSong()">⚠️ Confirmar Original?</button>`
+      : `<button type="button" class="btn-editor-restore" onclick="askRestoreFactoryStageSong()" title="Voltar cifra original da partitura">↩️ Restaurar Original</button>`
+  ) : "";
+
+  return `<div class="editor-top-row">` +
+      `<div class="editor-mode-tabs">` +
+        `<button type="button" class="editor-mode-btn ${isVisual ? "active" : ""}" onclick="switchStageEditorMode('visual')">🎯 Mover Cifras</button>` +
+        `<button type="button" class="editor-mode-btn ${!isVisual ? "active" : ""}" onclick="switchStageEditorMode('text')">📝 Editar Letra e Cifra</button>` +
+      `</div>` +
+      `<div class="editor-actions-group">` +
+        `<button type="button" class="btn-editor-save" onclick="saveStageSongEdits()">✅ Salvar Ajustes</button>` +
+        `<button type="button" class="btn-editor-secondary" onclick="copyStageSongCifra()" title="Copiar cifra ajustada">📋 Copiar</button>` +
+        restoreBtnHtml +
+        `<button type="button" class="btn-editor-secondary" onclick="closeStageSongEditor()">✖ Cancelar</button>` +
+      `</div>` +
+    `</div>` +
+    moverRowHtml;
+}
+
+function buildStageChordLineInnerHtml(lineIdx, lineStr) {
+  const tokens = parseChordLineTokens(lineStr);
+  let html = "";
+  let cursor = 0;
+  for (let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i];
+    if (tok.col > cursor) {
+      html += " ".repeat(tok.col - cursor);
+    }
+    const isSel = (stageEditorState.selectedLine === lineIdx && stageEditorState.selectedIdx === i);
+    html += `<span class="editable-chord${isSel ? " selected" : ""}" data-line="${lineIdx}" data-idx="${i}">${escapeEditorHtml(tok.text)}</span>`;
+    cursor = tok.col + tok.text.length;
+  }
+  html += `<button type="button" class="ve-add-chord-btn" onclick="openStageAddChordDialog(${lineIdx})" title="Adicionar acorde nesta linha">+ acorde</button>`;
+  return html;
+}
+
+function buildStageVisualEditorSurfaceHtml() {
+  const lines = stageEditorState.lines;
+  let rowsHtml = "";
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    if (trimmed.startsWith("[")) {
+      rowsHtml += `<div class="ve-line"><span class="cifra-section-tag">${escapeEditorHtml(line)}</span></div>`;
+    } else if (isPureChordLine(line)) {
+      rowsHtml += `<div class="ve-line ve-chord-line" id="stage-ve-line-${i}" data-line="${i}">${buildStageChordLineInnerHtml(i, line)}</div>`;
+    } else {
+      const prevIsChord = (i > 0 && isPureChordLine(lines[i - 1]));
+      if (prevIsChord && trimmed.length > 0) {
+        rowsHtml += `<div class="ve-line ve-lyric-clickable" data-lyric-line="${i}" onclick="onStageLyricLineTap(event, ${i})" title="Com um acorde selecionado acima, toque na sílaba desejada para alinhá-lo aqui">${escapeEditorHtml(line)}</div>`;
+      } else if (!prevIsChord && trimmed.length > 0) {
+        rowsHtml += `<div class="ve-line">${escapeEditorHtml(line)}<button type="button" class="ve-add-chord-btn" onclick="insertStageNewChordLineAbove(${i})" title="Criar linha de cifras acima desta frase">+ cifra acima</button></div>`;
+      } else {
+        rowsHtml += `<div class="ve-line">${escapeEditorHtml(line)}</div>`;
+      }
+    }
+  }
+
+  return `<div class="visual-cifra-wrap" id="stageVisualWrap" style="font-size:${appState.stageFontSize}px;">` +
+    `<span class="char-ruler" id="stageCharRuler">MMMMMMMMMM</span>` +
+    rowsHtml +
+    `</div>`;
+}
+
+function measureStageCharWidth() {
+  const ruler = document.getElementById("stageCharRuler");
+  if (!ruler) return 9.6;
+  const w = ruler.getBoundingClientRect().width / 10;
+  return w > 2 ? w : 9.6;
+}
+
+function moveTokenInList(tokens, idx, targetCol) {
+  if (!tokens[idx]) return;
+  const minAllowed = (idx === 0) ? 0 : (tokens[idx - 1].col + tokens[idx - 1].text.length + 1);
+  const clamped = Math.max(minAllowed, Math.min(160, targetCol));
+  tokens[idx].col = clamped;
+  for (let j = idx + 1; j < tokens.length; j++) {
+    const reqMin = tokens[j - 1].col + tokens[j - 1].text.length + 1;
+    if (tokens[j].col < reqMin) {
+      tokens[j].col = reqMin;
+    }
+  }
+}
+
+function refreshStageSingleChordLineAndToolbar(lineIdx) {
+  if (!stageEditorState.active) return;
+  const lineEl = document.getElementById(`stage-ve-line-${lineIdx}`);
+  if (lineEl) {
+    lineEl.innerHTML = buildStageChordLineInnerHtml(lineIdx, stageEditorState.lines[lineIdx]);
+  }
+  const song = appState.activeMissa[appState.currentStageIndex];
+  if (dom.stageEditorPanel && song) {
+    dom.stageEditorPanel.innerHTML = buildStageEditorToolbarHtml(song);
+    if (stageEditorState.dialogMode) {
+      const inp = document.getElementById("stageInlineChordInput");
+      if (inp) { inp.focus(); inp.select(); }
+    }
+  }
+}
+
+function nudgeStageSelectedChord(delta) {
+  if (!stageEditorState.active || stageEditorState.mode !== "visual") return;
+  const lIdx = stageEditorState.selectedLine;
+  const tIdx = stageEditorState.selectedIdx;
+  if (lIdx === null || tIdx === null) return;
+
+  const tokens = parseChordLineTokens(stageEditorState.lines[lIdx] || "");
+  if (!tokens[tIdx]) return;
+
+  moveTokenInList(tokens, tIdx, tokens[tIdx].col + delta);
+  stageEditorState.lines[lIdx] = serializeChordLineTokens(tokens);
+  refreshStageSingleChordLineAndToolbar(lIdx);
+}
+
+function onStageLyricLineTap(event, lyricLineIdx) {
+  if (!stageEditorState.active || stageEditorState.mode !== "visual") return;
+  const chordLineIdx = lyricLineIdx - 1;
+  if (stageEditorState.selectedLine !== chordLineIdx || stageEditorState.selectedIdx === null) return;
+
+  const lineEl = event.currentTarget;
+  const rect = lineEl.getBoundingClientRect();
+  const charW = measureStageCharWidth();
+  const targetCol = Math.max(0, Math.floor((event.clientX - rect.left) / charW));
+
+  const tokens = parseChordLineTokens(stageEditorState.lines[chordLineIdx] || "");
+  if (!tokens[stageEditorState.selectedIdx]) return;
+
+  moveTokenInList(tokens, stageEditorState.selectedIdx, targetCol);
+  stageEditorState.lines[chordLineIdx] = serializeChordLineTokens(tokens);
+  refreshStageSingleChordLineAndToolbar(chordLineIdx);
+}
+
+function openStageRenameChordDialog() {
+  if (stageEditorState.selectedLine === null || stageEditorState.selectedIdx === null) return;
+  stageEditorState.dialogMode = "rename";
+  stageEditorState.dialogLine = stageEditorState.selectedLine;
+  refreshStageSingleChordLineAndToolbar(stageEditorState.selectedLine);
+}
+
+function openStageAddChordDialog(lineIdx) {
+  stageEditorState.dialogMode = "add";
+  stageEditorState.dialogLine = lineIdx;
+  const song = appState.activeMissa[appState.currentStageIndex];
+  if (dom.stageEditorPanel && song) {
+    dom.stageEditorPanel.innerHTML = buildStageEditorToolbarHtml(song);
+    const inp = document.getElementById("stageInlineChordInput");
+    if (inp) inp.focus();
+  }
+}
+
+function insertStageNewChordLineAbove(lyricLineIdx) {
+  if (!stageEditorState.active) return;
+  const song = appState.activeMissa[appState.currentStageIndex];
+  const defaultChord = stageEditorState.baseShapeKey || (song ? song.tone : "C");
+  stageEditorState.lines.splice(lyricLineIdx, 0, defaultChord);
+  stageEditorState.selectedLine = lyricLineIdx;
+  stageEditorState.selectedIdx = 0;
+  stageEditorState.dialogMode = "rename";
+  stageEditorState.dialogLine = lyricLineIdx;
+  renderStageEditor();
+  const inp = document.getElementById("stageInlineChordInput");
+  if (inp) { inp.focus(); inp.select(); }
+}
+
+function cancelStageInlineChordDialog() {
+  stageEditorState.dialogMode = null;
+  stageEditorState.dialogLine = null;
+  const song = appState.activeMissa[appState.currentStageIndex];
+  if (dom.stageEditorPanel && song) {
+    dom.stageEditorPanel.innerHTML = buildStageEditorToolbarHtml(song);
+  }
+}
+
+function onStageInlineChordKey(e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    confirmStageInlineChordDialog();
+  } else if (e.key === "Escape") {
+    e.preventDefault();
+    cancelStageInlineChordDialog();
+  }
+}
+
+function confirmStageInlineChordDialog() {
+  const inp = document.getElementById("stageInlineChordInput");
+  const val = inp ? inp.value.trim() : "";
+  if (!val) {
+    cancelStageInlineChordDialog();
+    return;
+  }
+  if (stageEditorState.dialogMode === "rename") {
+    const lIdx = stageEditorState.selectedLine;
+    const tIdx = stageEditorState.selectedIdx;
+    const tokens = parseChordLineTokens(stageEditorState.lines[lIdx] || "");
+    if (tokens[tIdx]) {
+      tokens[tIdx].text = val;
+      for (let j = tIdx + 1; j < tokens.length; j++) {
+        const reqMin = tokens[j - 1].col + tokens[j - 1].text.length + 1;
+        if (tokens[j].col < reqMin) tokens[j].col = reqMin;
+      }
+      stageEditorState.lines[lIdx] = serializeChordLineTokens(tokens);
+    }
+    stageEditorState.dialogMode = null;
+    renderStageEditor();
+  } else if (stageEditorState.dialogMode === "add") {
+    const lIdx = stageEditorState.dialogLine;
+    const tokens = parseChordLineTokens(stageEditorState.lines[lIdx] || "");
+    const newCol = tokens.length > 0 ? (tokens[tokens.length - 1].col + tokens[tokens.length - 1].text.length + 4) : 0;
+    tokens.push({ col: newCol, text: val });
+    stageEditorState.lines[lIdx] = serializeChordLineTokens(tokens);
+    stageEditorState.selectedLine = lIdx;
+    stageEditorState.selectedIdx = tokens.length - 1;
+    stageEditorState.dialogMode = null;
+    renderStageEditor();
+  }
+}
+
+function deleteStageSelectedChord() {
+  if (stageEditorState.selectedLine === null || stageEditorState.selectedIdx === null) return;
+  const lIdx = stageEditorState.selectedLine;
+  const tIdx = stageEditorState.selectedIdx;
+  const tokens = parseChordLineTokens(stageEditorState.lines[lIdx] || "");
+  if (!tokens[tIdx]) return;
+
+  tokens.splice(tIdx, 1);
+  if (tokens.length === 0) {
+    stageEditorState.lines.splice(lIdx, 1);
+    stageEditorState.selectedLine = null;
+    stageEditorState.selectedIdx = null;
+  } else {
+    stageEditorState.lines[lIdx] = serializeChordLineTokens(tokens);
+    stageEditorState.selectedIdx = Math.min(tIdx, tokens.length - 1);
+  }
+  stageEditorState.dialogMode = null;
+  renderStageEditor();
+}
+
+function saveStageSongEdits() {
+  const song = appState.activeMissa[appState.currentStageIndex];
+  if (!song) return;
+
+  let editedDisplayedText = "";
+  if (stageEditorState.mode === "text") {
+    const ta = document.getElementById("stageEditorTextarea");
+    editedDisplayedText = ta ? ta.value : stageEditorState.lines.join("\n");
+  } else {
+    editedDisplayedText = stageEditorState.lines.join("\n");
+  }
+
+  const origScale = getScaleForRoot(song.tone);
+  const normalizedText = transposeFullCifraText(editedDisplayedText, -stageEditorState.baseDisplayedSemitones, origScale);
+
+  if (!song.factoryCifra) {
+    song.factoryCifra = song.cifra;
+  }
+  song.cifra = normalizedText;
+
+  const customMap = getCustomCifrasMap(appState.activeDateKey);
+  if (normalizedText === song.factoryCifra) {
+    delete customMap[song.id];
+  } else {
+    customMap[song.id] = normalizedText;
+  }
+  saveCustomCifrasMap(customMap, appState.activeDateKey);
+
+  closeStageSongEditor();
+  renderCurrentStageSong();
+  renderHomeSongs();
+  showToast("✅ Ajustes de letra e cifra salvos neste dispositivo!");
+}
+
+function askRestoreFactoryStageSong() {
+  stageEditorState.confirmRestore = true;
+  const song = appState.activeMissa[appState.currentStageIndex];
+  if (dom.stageEditorPanel && song) {
+    dom.stageEditorPanel.innerHTML = buildStageEditorToolbarHtml(song);
+  }
+  setTimeout(() => {
+    if (stageEditorState.active && stageEditorState.confirmRestore) {
+      stageEditorState.confirmRestore = false;
+      const curSong = appState.activeMissa[appState.currentStageIndex];
+      if (dom.stageEditorPanel && curSong) {
+        dom.stageEditorPanel.innerHTML = buildStageEditorToolbarHtml(curSong);
+      }
+    }
+  }, 4000);
+}
+
+function restoreFactoryStageSong() {
+  const song = appState.activeMissa[appState.currentStageIndex];
+  if (!song || !song.factoryCifra) return;
+  song.cifra = song.factoryCifra;
+
+  const customMap = getCustomCifrasMap(appState.activeDateKey);
+  delete customMap[song.id];
+  saveCustomCifrasMap(customMap, appState.activeDateKey);
+
+  closeStageSongEditor();
+  renderCurrentStageSong();
+  renderHomeSongs();
+  showToast("↩️ Cifra original restaurada!");
+}
+
+function copyStageSongCifra() {
+  const song = appState.activeMissa[appState.currentStageIndex];
+  if (!song) return;
+
+  let textToCopy = "";
+  if (stageEditorState.active && stageEditorState.songId === song.id) {
+    if (stageEditorState.mode === "text") {
+      const ta = document.getElementById("stageEditorTextarea");
+      textToCopy = ta ? ta.value : stageEditorState.lines.join("\n");
+    } else {
+      textToCopy = stageEditorState.lines.join("\n");
+    }
+  } else {
+    textToCopy = song.cifra;
+  }
+
+  const header = `${song.step}. ${song.title} (Tom: ${stageEditorState.baseShapeKey || song.tone})\n\n`;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(header + textToCopy).then(() => {
+      showToast("📋 Cifra copiada para a área de transferência!");
+    }).catch(() => {
+      showToast("⚠️ Não foi possível copiar automaticamente.");
+    });
+  }
+}
+
+// Eventos Globais de Arraste (Pointer) e Setas do Teclado para o Editor Visual de Cifras
+document.addEventListener("pointerdown", (e) => {
+  if (!stageEditorState.active || stageEditorState.mode !== "visual") return;
+  const chordEl = e.target.closest(".editable-chord");
+  if (!chordEl) return;
+
+  e.preventDefault();
+  const lIdx = parseInt(chordEl.getAttribute("data-line"), 10);
+  const tIdx = parseInt(chordEl.getAttribute("data-idx"), 10);
+  if (isNaN(lIdx) || isNaN(tIdx)) return;
+
+  stageEditorState.selectedLine = lIdx;
+  stageEditorState.selectedIdx = tIdx;
+  stageEditorState.dialogMode = null;
+
+  const origTokens = parseChordLineTokens(stageEditorState.lines[lIdx] || "");
+  const charW = measureStageCharWidth();
+
+  stagePointerDrag = {
+    pointerId: e.pointerId,
+    startX: e.clientX,
+    lineIdx: lIdx,
+    tokIdx: tIdx,
+    charW: charW,
+    origCols: origTokens.map(t => t.col),
+    lastDelta: 0
+  };
+
+  try { chordEl.setPointerCapture(e.pointerId); } catch (err) {}
+  refreshStageSingleChordLineAndToolbar(lIdx);
+});
+
+document.addEventListener("pointermove", (e) => {
+  if (!stagePointerDrag || e.pointerId !== stagePointerDrag.pointerId) return;
+  const deltaCols = Math.round((e.clientX - stagePointerDrag.startX) / stagePointerDrag.charW);
+  if (deltaCols === stagePointerDrag.lastDelta) return;
+  stagePointerDrag.lastDelta = deltaCols;
+
+  const lIdx = stagePointerDrag.lineIdx;
+  const tIdx = stagePointerDrag.tokIdx;
+  const tokens = parseChordLineTokens(stageEditorState.lines[lIdx] || "");
+  if (!tokens[tIdx]) return;
+
+  for (let i = 0; i < tokens.length; i++) {
+    if (stagePointerDrag.origCols[i] !== undefined) {
+      tokens[i].col = stagePointerDrag.origCols[i];
+    }
+  }
+  moveTokenInList(tokens, tIdx, stagePointerDrag.origCols[tIdx] + deltaCols);
+  stageEditorState.lines[lIdx] = serializeChordLineTokens(tokens);
+
+  const lineEl = document.getElementById(`stage-ve-line-${lIdx}`);
+  if (lineEl) {
+    lineEl.innerHTML = buildStageChordLineInnerHtml(lIdx, stageEditorState.lines[lIdx]);
+  }
+  const statusEl = document.getElementById("stageMoverStatus");
+  if (statusEl && tokens[tIdx]) {
+    statusEl.innerHTML = `Movendo: <span class="selected-chord-pill">${escapeEditorHtml(tokens[tIdx].text)}</span> <span style="opacity:0.85;">(Coluna ${tokens[tIdx].col + 1})</span>`;
+  }
+});
+
+function endStageChordPointerDrag(e) {
+  if (!stagePointerDrag || (e && e.pointerId !== stagePointerDrag.pointerId)) return;
+  const lIdx = stagePointerDrag.lineIdx;
+  stagePointerDrag = null;
+  refreshStageSingleChordLineAndToolbar(lIdx);
+}
+document.addEventListener("pointerup", endStageChordPointerDrag);
+document.addEventListener("pointercancel", endStageChordPointerDrag);
+
+document.addEventListener("keydown", (e) => {
+  if (!stageEditorState.active || stageEditorState.mode !== "visual") return;
+  const activeTag = document.activeElement ? document.activeElement.tagName : "";
+  if (activeTag === "INPUT" || activeTag === "TEXTAREA") return;
+  if (stageEditorState.selectedLine === null || stageEditorState.selectedIdx === null) return;
+
+  if (e.key === "ArrowLeft") {
+    e.preventDefault();
+    nudgeStageSelectedChord(e.shiftKey ? -3 : -1);
+  } else if (e.key === "ArrowRight") {
+    e.preventDefault();
+    nudgeStageSelectedChord(e.shiftKey ? 3 : 1);
+  } else if (e.key === "Delete" || e.key === "Backspace") {
+    e.preventDefault();
+    deleteStageSelectedChord();
+  }
+});
+
+// ========================================================
 // EXPORTAÇÃO COMPLETA DO ROTEIRO EM PDF / IMPRESSÃO
 // Inclui os tons transpostos e capotraste salvos pelo músico
 // ========================================================
 function exportMassRepertoireToPdf() {
+  if (stageEditorState && stageEditorState.active) {
+    closeStageSongEditor();
+  }
   if (!appState.activeMissa || appState.activeMissa.length === 0) {
     alert("Nenhuma missa selecionada para exportar.");
     return;

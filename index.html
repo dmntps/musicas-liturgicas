@@ -558,6 +558,7 @@
           <div class="stage-badges-row">
             <span class="stage-moment-badge" id="stageMomentBadge">1. Canto de Entrada</span>
             <span class="stage-folheto-tag" id="stageFolhetoTag">O Domingo nº 01</span>
+            <span class="stage-edited-badge hidden" id="stageEditedBadge">✏️ Ajustado</span>
           </div>
           <h1 class="stage-song-title" id="stageSongTitle">O Senhor é Rei</h1>
           <p class="stage-song-author" id="stageSongAuthor">Pe. Zezinho • Ritmo: Balada Litúrgica</p>
@@ -635,6 +636,9 @@
           </div>
 
           <div class="toolbar-group">
+            <button type="button" class="btn-tool-edit" id="btnToggleChordEditor" title="Mover cifras ou ajustar letra desta música">
+              <span>✏️ Editar Cifra</span>
+            </button>
             <button class="btn-tool-save" id="btnSaveTone" title="Salvar tom e capotraste para esta missa">
               <span>💾 Salvar Tom</span>
             </button>
@@ -644,9 +648,13 @@
           </div>
         </div>
 
+        <!-- PAINEL DE EDIÇÃO INTERATIVA DE LETRA & CIFRA (🎯 Mover Cifras / 📝 Editar Letra e Cifra) -->
+        <div class="stage-editor-panel hidden" id="stageEditorPanel"></div>
+
         <!-- ÁREA DA CIFRA & LETRA FORMATADA -->
         <div class="stage-cifra-box">
           <pre id="stageCifraPre"></pre>
+          <div id="stageEditorBody" class="hidden"></div>
         </div>
 
       </div>

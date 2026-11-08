@@ -3381,3 +3381,352 @@ body {
   border-color: var(--color-gold-dark);
 }
 
+/* ========================================================
+   ✏️ EDITOR INTERATIVO DE LETRA & CIFRA (PADRÃO REVISADO)
+   Modos: 🎯 Mover Cifras (Visual) e 📝 Editar Letra e Cifra
+   ======================================================== */
+.stage-edited-badge,
+.badge-edited-pill {
+  background: #fff8e1;
+  color: #b45309;
+  border: 1px solid #fcd34d;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.btn-tool-edit {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1.5px solid #bfdbfe;
+  padding: 6px 11px;
+  border-radius: var(--radius-sm);
+  font-size: 0.76rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.18s ease;
+}
+
+.btn-tool-edit:hover {
+  background: #dbeafe;
+  transform: translateY(-1px);
+}
+
+.btn-tool-edit.editing-active {
+  background: #d97706 !important;
+  color: #ffffff !important;
+  border-color: #b45309 !important;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.25);
+}
+
+.stage-editor-panel {
+  background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1.5px solid #f59e0b;
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.12);
+}
+
+.editor-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.editor-mode-tabs {
+  display: inline-flex;
+  background: rgba(0, 0, 0, 0.07);
+  padding: 3px;
+  border-radius: 10px;
+  gap: 4px;
+}
+
+.editor-mode-btn {
+  border: none;
+  background: transparent;
+  color: #57534e;
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 6px 11px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.editor-mode-btn.active {
+  background: #ffffff;
+  color: #92400e;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14);
+}
+
+.editor-actions-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.btn-editor-save {
+  background: #15803d;
+  color: #ffffff;
+  border: 1px solid #166534;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-editor-save:hover {
+  background: #166534;
+}
+
+.btn-editor-secondary {
+  background: #ffffff;
+  color: #44403c;
+  border: 1px solid #d6d3d1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-editor-restore {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.editor-mover-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.mover-status {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #78350f;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.selected-chord-pill {
+  background: #b71c1c;
+  color: #ffffff;
+  padding: 2px 9px;
+  border-radius: 6px;
+  font-family: "JetBrains Mono", "Consolas", monospace;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.mover-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.btn-nudge {
+  background: #ffffff;
+  color: #1c1917;
+  border: 1px solid #d6d3d1;
+  min-width: 38px;
+  height: 31px;
+  padding: 0 8px;
+  border-radius: 7px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  user-select: none;
+}
+
+.btn-nudge:active {
+  transform: scale(0.93);
+}
+
+.btn-nudge:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.btn-nudge-danger {
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.inline-chord-Dialog {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffffff;
+  padding: 3px 6px;
+  border-radius: 8px;
+  border: 1.5px solid #d97706;
+}
+
+.inline-chord-input {
+  width: 82px;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-family: "JetBrains Mono", "Consolas", monospace;
+  font-size: 0.84rem;
+  font-weight: 800;
+  background: #ffffff;
+  color: #111827;
+}
+
+/* Superfície Visual de Cifra Interativa */
+.visual-cifra-wrap {
+  position: relative;
+  font-family: "JetBrains Mono", "Consolas", "Courier New", monospace;
+  line-height: 1.75;
+  white-space: pre;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  user-select: none;
+  color: #1e293b;
+}
+
+.char-ruler {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: pre;
+  font-family: "JetBrains Mono", "Consolas", "Courier New", monospace;
+}
+
+.ve-line {
+  min-height: 1.55em;
+  position: relative;
+}
+
+.ve-chord-line {
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: 4px;
+  padding: 1px 0;
+}
+
+.editable-chord {
+  display: inline-block;
+  font-weight: 800;
+  color: #b71c1c;
+  background: rgba(183, 28, 28, 0.09);
+  border: 1px dashed rgba(183, 28, 28, 0.48);
+  border-radius: 4px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: background 0.12s, box-shadow 0.12s;
+  position: relative;
+}
+
+.editable-chord:hover {
+  background: rgba(245, 158, 11, 0.25);
+}
+
+.editable-chord.selected {
+  background: #b71c1c !important;
+  color: #ffffff !important;
+  border-style: solid !important;
+  border-color: #b71c1c !important;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.48);
+  z-index: 3;
+}
+
+.ve-add-chord-btn {
+  display: inline-block;
+  margin-left: 10px;
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px dashed #cbd5e1;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-family: "Inter", -apple-system, sans-serif;
+  font-weight: 700;
+  padding: 0 6px;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.ve-add-chord-btn:hover {
+  color: #d97706;
+  border-color: #d97706;
+  background: #fffbeb;
+}
+
+.ve-lyric-clickable {
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.ve-lyric-clickable:hover {
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.cifra-editor-textarea {
+  width: 100%;
+  min-height: 340px;
+  font-family: "JetBrains Mono", "Consolas", "Courier New", monospace;
+  line-height: 1.65;
+  padding: 14px;
+  border: 2px solid #f59e0b;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1e293b;
+  resize: vertical;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+  tab-size: 4;
+}
+
+.cifra-editor-textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.28);
+}
+
+.editor-hint-footer {
+  font-size: 0.75rem;
+  color: #475569;
+  margin-top: 6px;
+}
+
+
