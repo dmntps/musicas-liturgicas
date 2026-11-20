@@ -1705,6 +1705,11 @@ body {
   box-shadow: 0 0 8px rgba(192, 132, 252, 0.75) !important;
 }
 
+.rose-dot {
+  background-color: #f48fb1 !important;
+  box-shadow: 0 0 8px rgba(244, 143, 177, 0.8) !important;
+}
+
 .liturgical-banner.theme-gold {
   background: linear-gradient(135deg, #5c3d04 0%, #92600a 55%, #3d2702 100%) !important;
   border: 1px solid rgba(253, 224, 71, 0.45) !important;
@@ -1743,6 +1748,26 @@ body {
 .liturgical-banner.theme-purple .salmo-tag {
   background: rgba(255, 255, 255, 0.14);
   color: #f3e8ff;
+}
+
+.liturgical-banner.theme-rose {
+  background: linear-gradient(135deg, #4a0826 0%, #880e4f 55%, #c2185b 100%) !important;
+  border: 1px solid rgba(248, 187, 208, 0.48) !important;
+  box-shadow: 0 8px 24px rgba(136, 14, 79, 0.32) !important;
+}
+
+.liturgical-banner.theme-rose .banner-badge {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(248, 187, 208, 0.4);
+}
+
+.liturgical-banner.theme-rose .color-name {
+  color: #ffe0ec;
+}
+
+.liturgical-banner.theme-rose .salmo-tag {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fce4ec;
 }
 
 .liturgical-banner.theme-mariano {
@@ -2614,6 +2639,11 @@ body {
   border-color: #d8b4fe;
 }
 
+.next-mass-hero-card.theme-rose-hero {
+  background: linear-gradient(135deg, #4a0826 0%, #880e4f 55%, #c2185b 100%);
+  border-color: #f48fb1;
+}
+
 /* Barra de Busca de Missas */
 .masses-search-bar {
   position: relative;
@@ -2767,6 +2797,17 @@ body {
   border-color: #6b21a8;
 }
 
+.mass-hub-card.card-rose.active {
+  border-color: #be185d;
+  border-left: 5px solid #be185d;
+  background: linear-gradient(90deg, #fdf2f8 0%, #ffffff 100%);
+}
+
+.mass-hub-card.card-rose.active .mass-radio-indicator {
+  background: #9d174d;
+  border-color: #9d174d;
+}
+
 .gold-pill {
   display: inline-flex;
   align-items: center;
@@ -2786,6 +2827,19 @@ body {
   gap: 4px;
   background: #f3e8ff;
   color: #6b21a8;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  margin-left: 4px;
+}
+
+.rose-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fce4ec;
+  color: #880e4f;
   font-size: 0.68rem;
   font-weight: 700;
   padding: 2px 7px;
@@ -2828,6 +2882,10 @@ body {
 
 .mass-hub-color-dot.purple {
   background: #a855f7;
+}
+
+.mass-hub-color-dot.rose {
+  background: #ec4899;
 }
 
 .mass-hub-title {

@@ -503,9 +503,9 @@ const appState = {
   currentUser: null,
   authMode: "login", // "login" ou "register"
   activeFolheto: "caderno-piedade",
-  activeDateKey: "2026-11-08", // Data ativa padrão (32º Domingo do Tempo Comum)
-  activeMissa: (typeof missasReais !== "undefined" && missasReais["2026-11-08"])
-    ? JSON.parse(JSON.stringify(missasReais["2026-11-08"].songs))
+  activeDateKey: "2026-11-22", // Data ativa padrão (Solenidade de Cristo Rei)
+  activeMissa: (typeof missasReais !== "undefined" && missasReais["2026-11-22"])
+    ? JSON.parse(JSON.stringify(missasReais["2026-11-22"].songs))
     : JSON.parse(JSON.stringify(missaDomingo23)),
   currentStageIndex: 0,
   stageTranspositions: {},
@@ -806,7 +806,7 @@ function switchActiveFolheto(folhetoId) {
   const availableDates = Object.keys(catalog);
   let targetDate = appState.activeDateKey;
   if (!catalog[targetDate]) {
-    targetDate = availableDates[0] || "2026-11-08";
+    targetDate = availableDates[0] || "2026-11-22";
   }
 
   selectMassDate(targetDate);
@@ -1360,14 +1360,15 @@ function renderMassesHub(monthFilter = "todos", searchQuery = "") {
       dom.selectedMassTag.innerText = `✓ MISSA SELECIONADA (${heroMass.shortDate})`;
     }
     if (dom.nextMassHeroCard) {
-      dom.nextMassHeroCard.classList.remove("theme-mariano-hero", "theme-gold-hero", "theme-purple-hero");
+      dom.nextMassHeroCard.classList.remove("theme-mariano-hero", "theme-gold-hero", "theme-purple-hero", "theme-rose-hero");
       if (heroMass.bannerTheme === "mariano") dom.nextMassHeroCard.classList.add("theme-mariano-hero");
       else if (heroMass.bannerTheme === "gold") dom.nextMassHeroCard.classList.add("theme-gold-hero");
       else if (heroMass.bannerTheme === "purple") dom.nextMassHeroCard.classList.add("theme-purple-hero");
+      else if (heroMass.bannerTheme === "rose") dom.nextMassHeroCard.classList.add("theme-rose-hero");
     }
     if (dom.nextMassPill) {
       if (heroMass.bannerTheme === "mariano") {
-        dom.nextMassPill.innerHTML = `👑 Solenidade Mariana`;
+        dom.nextMassPill.innerHTML = `👑 ${heroMass.cor || "Solenidade Mariana"}`;
         dom.nextMassPill.style.color = "#93c5fd";
       } else if (heroMass.bannerTheme === "gold") {
         dom.nextMassPill.innerHTML = `👑 ${heroMass.cor || "Branco & Ouro"}`;
@@ -1375,6 +1376,9 @@ function renderMassesHub(monthFilter = "todos", searchQuery = "") {
       } else if (heroMass.bannerTheme === "purple") {
         dom.nextMassPill.innerHTML = `🟣 ${heroMass.cor || "Roxo Litúrgico"}`;
         dom.nextMassPill.style.color = "#e9d5ff";
+      } else if (heroMass.bannerTheme === "rose") {
+        dom.nextMassPill.innerHTML = `🌸 ${heroMass.cor || "Rosa Litúrgico (Gaudete)"}`;
+        dom.nextMassPill.style.color = "#fbcfe8";
       } else {
         dom.nextMassPill.innerHTML = `🟢 ${heroMass.cor || "Verde Litúrgico"}`;
         dom.nextMassPill.style.color = "#86efac";
@@ -1394,10 +1398,11 @@ function renderMassesHub(monthFilter = "todos", searchQuery = "") {
 
     // Filtro por Tempo Litúrgico / Mês
     const titleLower = (mass.title || "").toLowerCase();
-    if (monthFilter === "tempo-comum" && mass.bannerTheme !== "green" && !titleLower.includes("tempo comum")) return;
-    if (monthFilter === "solenidade" && mass.bannerTheme !== "gold" && mass.bannerTheme !== "mariano" && !titleLower.includes("solenidade") && !titleLower.includes("cristo rei")) return;
-    if (monthFilter === "advento" && mass.bannerTheme !== "purple" && !titleLower.includes("advento") && !dateKey.startsWith("2026-12")) return;
     if (monthFilter === "novembro" && !dateKey.startsWith("2026-11")) return;
+    if (monthFilter === "dezembro" && !dateKey.startsWith("2026-12")) return;
+    if (monthFilter === "tempo-comum" && mass.bannerTheme !== "green" && !titleLower.includes("tempo comum")) return;
+    if (monthFilter === "solenidade" && mass.bannerTheme !== "gold" && mass.bannerTheme !== "mariano" && !titleLower.includes("solenidade") && !titleLower.includes("cristo rei") && !titleLower.includes("imaculada")) return;
+    if (monthFilter === "advento" && mass.bannerTheme !== "purple" && mass.bannerTheme !== "rose" && !titleLower.includes("advento")) return;
 
     // Filtro por Busca de Texto
     if (query) {
@@ -1411,20 +1416,27 @@ function renderMassesHub(monthFilter = "todos", searchQuery = "") {
     const isMariano = mass.bannerTheme === "mariano";
     const isGold = mass.bannerTheme === "gold";
     const isPurple = mass.bannerTheme === "purple";
+    const isRose = mass.bannerTheme === "rose";
 
     let colorDotClass = "mass-hub-color-dot";
     if (isMariano) colorDotClass += " blue";
-    else if (isGold || (mass.cor && mass.cor.toLowerCase().includes("branco"))) colorDotClass += " gold";
+    else if (isGold || (mass.cor && mass.cor.toLowerCase().includes("ouro"))) colorDotClass += " gold";
+    else if (isRose) colorDotClass += " rose";
     else if (isPurple || (mass.cor && mass.cor.toLowerCase().includes("roxo"))) colorDotClass += " purple";
 
     let cardThemeClass = "";
     if (isMariano) cardThemeClass = "card-mariano";
     else if (isGold) cardThemeClass = "card-gold";
+    else if (isRose) cardThemeClass = "card-rose";
     else if (isPurple) cardThemeClass = "card-purple";
 
     let pillBadgeHtml = "";
-    if (isMariano) pillBadgeHtml = '<span class="mariano-pill">👑 Solenidade</span>';
-    else if (isGold) pillBadgeHtml = '<span class="gold-pill">👑 Cristo Rei</span>';
+    if (isMariano) {
+      pillBadgeHtml = titleLower.includes("imaculada")
+        ? '<span class="mariano-pill">👑 Imaculada</span>'
+        : '<span class="mariano-pill">👑 Solenidade Mariana</span>';
+    } else if (isGold) pillBadgeHtml = '<span class="gold-pill">👑 Cristo Rei</span>';
+    else if (isRose) pillBadgeHtml = '<span class="rose-pill">🌸 Gaudete</span>';
     else if (isPurple) pillBadgeHtml = '<span class="purple-pill">🕯️ Advento</span>';
 
     const card = document.createElement("div");
@@ -1483,20 +1495,20 @@ function setupMassesEvents() {
   // 3 Caminhos do Painel Superior da Missa Selecionada
   if (dom.btnHeroOpenRepertoire) {
     dom.btnHeroOpenRepertoire.addEventListener("click", () => {
-      openHomeScreenForMass(appState.activeDateKey || "2026-11-08");
+      openHomeScreenForMass(appState.activeDateKey || "2026-11-22");
     });
   }
 
   if (dom.btnHeroOpenAudio) {
     dom.btnHeroOpenAudio.addEventListener("click", () => {
-      selectMassDate(appState.activeDateKey || "2026-11-08");
+      selectMassDate(appState.activeDateKey || "2026-11-22");
       openAudioScreen(0, false);
     });
   }
 
   if (dom.btnHeroOpenStage) {
     dom.btnHeroOpenStage.addEventListener("click", () => {
-      selectMassDate(appState.activeDateKey || "2026-11-08");
+      selectMassDate(appState.activeDateKey || "2026-11-22");
       openStageMode(0, "masses");
     });
   }
@@ -1546,14 +1558,14 @@ function setupMassesEvents() {
     dom.navMassesTab.addEventListener("click", () => openMassesScreen());
   }
   if (dom.navHomeTabFromMasses) {
-    dom.navHomeTabFromMasses.addEventListener("click", () => openHomeScreenForMass(appState.activeDateKey || "2026-11-08"));
+    dom.navHomeTabFromMasses.addEventListener("click", () => openHomeScreenForMass(appState.activeDateKey || "2026-11-22"));
   }
   if (dom.navAudioTabFromMasses) {
     dom.navAudioTabFromMasses.addEventListener("click", () => openAudioScreen(0, false));
   }
   if (dom.navStageTabFromMasses) {
     dom.navStageTabFromMasses.addEventListener("click", () => {
-      selectMassDate(appState.activeDateKey || "2026-11-08");
+      selectMassDate(appState.activeDateKey || "2026-11-22");
       openStageMode(0, "masses");
     });
   }
@@ -1850,14 +1862,18 @@ function initApp() {
   setupAudioStudioEvents();
   setupStageEvents();
   loadSavedBulletin();
-  applyLiturgicalTheme("Verde");
 
   const catalog = getActiveCatalog();
   const dates = Object.keys(catalog);
   const savedDate = localStorage.getItem("liturgia_selected_mass_date");
   const initialDate = (savedDate && catalog[savedDate])
     ? savedDate
-    : (catalog["2026-11-08"] ? "2026-11-08" : (dates[0] || "2026-11-08"));
+    : (catalog["2026-11-22"] ? "2026-11-22" : (dates[0] || "2026-11-22"));
+  const initialTheme = catalog[initialDate] ? catalog[initialDate].bannerTheme : "";
+  const loginTheme = initialTheme === "gold" || initialTheme === "mariano"
+    ? "Branco"
+    : (initialTheme === "purple" || initialTheme === "rose" ? "Roxo" : "Verde");
+  applyLiturgicalTheme(loginTheme);
   selectMassDate(initialDate);
 
   // Verificar se o usuário já possui sessão ativa gravada
@@ -1916,13 +1932,17 @@ function selectMassDate(dateKey) {
   localStorage.setItem("liturgia_selected_mass_date", dateKey);
   appState.activeMissa = JSON.parse(JSON.stringify(selectedMass.songs));
 
-  // Preservar cifra original de fábrica e aplicar ajustes salvos pelo músico nesta celebração
+  // Preservar cifra original de fábrica, hidratar ajustes, tons e capotraste salvos pelo músico
   const customCifras = getCustomCifrasMap(dateKey);
   appState.activeMissa.forEach(s => {
     s.factoryCifra = s.cifra;
     if (customCifras[s.id]) {
       s.cifra = customCifras[s.id];
     }
+    const savedTone = localStorage.getItem(`tom_missa_${dateKey}_${s.id}`);
+    appState.stageTranspositions[s.id] = (savedTone !== null) ? parseInt(savedTone, 10) : 0;
+    const savedCapo = localStorage.getItem(`capo_missa_${dateKey}_${s.id}`);
+    appState.stageCapos[s.id] = (savedCapo !== null) ? parseInt(savedCapo, 10) : 0;
   });
   if (typeof closeStageSongEditor === "function") {
     closeStageSongEditor();
@@ -1938,16 +1958,16 @@ function selectMassDate(dateKey) {
     dom.audioHeaderSubtitle.innerText = `${selectedMass.shortDate}/2026 • ${shortTitle}`;
   }
 
-  // 2. Atualizar Banner da Home e Tematização Litúrgica (Verde, Ouro, Roxo, Mariano)
+  // 2. Atualizar Banner da Home e Tematização Litúrgica (Verde, Ouro, Roxo, Rosa, Mariano)
   if (dom.bannerTitle) dom.bannerTitle.innerText = selectedMass.title;
   if (dom.bannerDate) dom.bannerDate.innerText = `${selectedMass.dateFormatted} • ${selectedMass.ano}`;
   if (dom.bannerSalmo) dom.bannerSalmo.innerText = `Salmo: ${selectedMass.salmo}`;
   if (dom.bannerColorName) dom.bannerColorName.innerText = selectedMass.cor || "Verde Litúrgico";
 
   if (dom.liturgicalBanner) {
-    dom.liturgicalBanner.classList.remove("theme-mariano", "theme-gold", "theme-purple");
+    dom.liturgicalBanner.classList.remove("theme-mariano", "theme-gold", "theme-purple", "theme-rose");
     if (dom.bannerColorDot) {
-      dom.bannerColorDot.classList.remove("green-dot", "blue-dot", "gold-dot", "purple-dot");
+      dom.bannerColorDot.classList.remove("green-dot", "blue-dot", "gold-dot", "purple-dot", "rose-dot");
     }
 
     if (selectedMass.bannerTheme === "mariano") {
@@ -1959,6 +1979,9 @@ function selectMassDate(dateKey) {
     } else if (selectedMass.bannerTheme === "purple") {
       dom.liturgicalBanner.classList.add("theme-purple");
       if (dom.bannerColorDot) dom.bannerColorDot.classList.add("purple-dot");
+    } else if (selectedMass.bannerTheme === "rose") {
+      dom.liturgicalBanner.classList.add("theme-rose");
+      if (dom.bannerColorDot) dom.bannerColorDot.classList.add("rose-dot");
     } else {
       if (dom.bannerColorDot) dom.bannerColorDot.classList.add("green-dot");
     }
@@ -2901,6 +2924,9 @@ function openSwapModal() {
 
     card.addEventListener("click", () => {
       stopRehearsalAudio();
+      if (typeof closeStageSongEditor === "function" && stageEditorState && stageEditorState.active) {
+        closeStageSongEditor();
+      }
       // Substituir a música pontualmente mantendo as demais da missa (preservando áudio e ritmo)
       appState.activeMissa[appState.currentStageIndex] = {
         ...currentSong,
@@ -2910,12 +2936,18 @@ function openSwapModal() {
         tone: alt.tone,
         audioFile: alt.audioFile !== undefined ? alt.audioFile : "",
         folhetoLabel: `${alt.folhetoLabel} (Personalizado)`,
-        cifra: alt.cifra
+        cifra: alt.cifra,
+        factoryCifra: alt.cifra
       };
 
-      // Resetar transposição e capo da música substituída
+      // Resetar transposição e capo da música substituída e remover ajuste personalizado anterior desse slot
       appState.stageTranspositions[currentSong.id] = 0;
       appState.stageCapos[currentSong.id] = 0;
+      const customMap = getCustomCifrasMap(appState.activeDateKey);
+      if (customMap[currentSong.id]) {
+        delete customMap[currentSong.id];
+        saveCustomCifrasMap(customMap, appState.activeDateKey);
+      }
 
       dom.swapModal.classList.add("hidden");
       renderMomentsStepper();
@@ -3087,7 +3119,7 @@ let stageEditorState = {
 let stagePointerDrag = null;
 
 function getCustomCifrasStorageKey(dateKey = appState.activeDateKey) {
-  return `liturgia_custom_cifras_${dateKey || "2026-11-08"}`;
+  return `liturgia_custom_cifras_${dateKey || "2026-11-22"}`;
 }
 
 function getCustomCifrasMap(dateKey = appState.activeDateKey) {
@@ -3773,8 +3805,18 @@ function exportMassRepertoireToPdf() {
     title: "Missa Litúrgica",
     dateFormatted: "Data não definida",
     salmo: "Salmo Responsorial",
-    cor: "Verde Litúrgico"
+    cor: "Verde Litúrgico",
+    bannerTheme: "green"
   };
+
+  const pdfThemeColors = {
+    gold: "#92600a",
+    purple: "#4a148c",
+    rose: "#880e4f",
+    mariano: "#103366",
+    green: "#1b5e20"
+  };
+  const pdfAccentColor = pdfThemeColors[currentMass.bannerTheme] || "#1b5e20";
 
   const printWindow = window.open("", "_blank");
   if (!printWindow) {
@@ -3782,11 +3824,18 @@ function exportMassRepertoireToPdf() {
     return;
   }
 
-  // Gera as páginas com as músicas na tonalidade configurada
+  // Gera as páginas com as músicas na tonalidade configurada (hidratando também do localStorage)
   const songsHtml = appState.activeMissa.map((song, index) => {
-    // Tom e capo configurados para este canto
-    const transposition = appState.stageTranspositions[song.id] || 0;
-    const capo = appState.stageCapos[song.id] || 0;
+    let transposition = appState.stageTranspositions[song.id];
+    if (transposition === undefined) {
+      const savedTone = localStorage.getItem(getToneStorageKey(song.id));
+      transposition = (savedTone !== null) ? parseInt(savedTone, 10) : 0;
+    }
+    let capo = appState.stageCapos[song.id];
+    if (capo === undefined) {
+      const savedCapo = localStorage.getItem(getCapoStorageKey(song.id));
+      capo = (savedCapo !== null) ? parseInt(savedCapo, 10) : 0;
+    }
     const fingeringTransposition = transposition - capo;
     const effectiveRealTone = transposeChord(song.tone, transposition);
     const fingeringTone = capo > 0 ? transposeChord(effectiveRealTone, -capo) : effectiveRealTone;
@@ -3842,7 +3891,7 @@ function exportMassRepertoireToPdf() {
       padding: 10px;
     }
     .pdf-cover-header {
-      border-bottom: 3px double #1b5e20;
+      border-bottom: 3px double ${pdfAccentColor};
       padding-bottom: 12px;
       margin-bottom: 20px;
       display: flex;
@@ -3852,7 +3901,7 @@ function exportMassRepertoireToPdf() {
     .pdf-parish-title {
       font-size: 11pt;
       font-weight: 700;
-      color: #1b5e20;
+      color: ${pdfAccentColor};
       text-transform: uppercase;
       letter-spacing: 1px;
     }
@@ -3895,7 +3944,7 @@ function exportMassRepertoireToPdf() {
       font-size: 8.5pt;
       font-weight: 800;
       text-transform: uppercase;
-      color: #15803d;
+      color: ${pdfAccentColor};
       letter-spacing: 0.5px;
     }
     .pdf-song-title {
@@ -3956,9 +4005,9 @@ function exportMassRepertoireToPdf() {
 <body>
   <div class="pdf-cover-header">
     <div>
-      <div class="pdf-parish-title">✝ Pastoral Litúrgica • Hinário Paroquial</div>
+      <div class="pdf-parish-title">✝ Pastoral Litúrgica • Comunidade Virgem da Piedade</div>
       <h1 class="pdf-mass-title">${currentMass.title}</h1>
-      <p class="pdf-mass-subtitle">${currentMass.dateFormatted} • ${currentMass.ano || "Ano A"}</p>
+      <p class="pdf-mass-subtitle">${currentMass.dateFormatted} • ${currentMass.ano || "Ano B"} • ${currentMass.cor || ""}</p>
       <p class="pdf-mass-salmo">${currentMass.salmo || ""}</p>
     </div>
     <div class="pdf-meta-right">

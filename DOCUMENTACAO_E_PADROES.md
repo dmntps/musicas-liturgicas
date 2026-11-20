@@ -7,16 +7,18 @@ Este documento consolida o raio-x completo do protótipo desenvolvido, as decis�
 ## 1. 🔍 O Que Já Foi Construído e Validado
 
 ### 1.1. Camada de Dados e Acervo Litúrgico
-- **Catálogo Ativo (Novembro de 2026 — A partir do 32º Domingo)**:
-  - **08/11/2026**: 32º Domingo do Tempo Comum — Ano A (*Verde Litúrgico*, 11 cantos revisados).
-  - **15/11/2026**: 33º Domingo do Tempo Comum — Ano A (*Verde Litúrgico*, 11 cantos revisados).
-  - **22/11/2026**: Solenidade de Cristo Rei do Universo — Ano A (*Branco & Ouro*, 12 cantos revisados).
-  - **29/11/2026**: 1º Domingo do Advento — Ano B (*Roxo Litúrgico*, 9 cantos revisados).
-  - *Nota de Histórico*: Repertórios de celebrações já encerradas (Setembro, Outubro, Todos os Santos e Fiéis Defuntos) são preservados na pasta `historico/`.
+- **Catálogo Ativo (22/11 a 20/12 de 2026 — Limitado ao 4º Domingo do Advento)**:
+  - **22/11/2026**: Solenidade de Nosso Senhor Jesus Cristo, Rei do Universo — Ano A (*Branco & Ouro*, 10 cantos revisados).
+  - **29/11/2026**: 1º Domingo do Advento — Ano B (*Roxo Litúrgico*, 10 cantos revisados + Acendimento da 1ª Vela).
+  - **06/12/2026**: 2º Domingo do Advento — Ano B (*Roxo Litúrgico*, 10 cantos revisados + Acendimento da 2ª Vela).
+  - **08/12/2026**: Solenidade da Imaculada Conceição da Virgem Maria — Ano B (*Branco / Azul Mariano*, 10 cantos revisados).
+  - **13/12/2026**: 3º Domingo do Advento (Domingo *Gaudete*) — Ano B (*Rosa Litúrgico*, 10 cantos revisados + Acendimento da 3ª Vela).
+  - **20/12/2026**: 4º Domingo do Advento — Ano B (*Roxo Litúrgico*, 10 cantos revisados + Acendimento da 4ª Vela).
+  - *Nota de Histórico*: Repertórios de celebrações anteriores a 20/11/2026 (Setembro, Outubro, Todos os Santos, Fiéis Defuntos, 32º e 33º Domingos do Tempo Comum) são preservados em backups na pasta `historico/`.
 - **Ecossistema Litúrgico**:
-  - **Igreja em Oração (Folheto Oficial da Comunidade)**: repertório pastoral sincronizado fielmente com os documentos HTML revisados da paróquia, incluindo arranjos, ritmos e áudios MP3 de ensaio.
+  - **Igreja em Oração (Folheto Oficial da Comunidade)**: repertório pastoral sincronizado fielmente com os documentos HTML revisados da paróquia (Padrão `2026.3`), incluindo arranjos, ritmos e áudios MP3 de ensaio.
 - **Acervo de Áudio**:
-  - **27 arquivos MP3 reais deduplicados** organizados na pasta `audios/`, extraídos diretamente dos documentos HTML revisados para ensaio e memorização melódica dos músicos.
+  - **40 arquivos MP3 reais** (39 faixas únicas das 6 celebrações + alternativa *Glória* de Eliana Ribeiro) organizados na pasta `audios/`, extraídos diretamente dos documentos HTML revisados para ensaio e memorização melódica dos músicos.
 - **Suporte a Mídia Oficial**:
   - Player de vídeo YouTube embutido (modo privativo `youtube-nocookie`) com recurso retrátil/expansível.
   - Links diretos de reprodução legal no Spotify e YouTube.
@@ -53,7 +55,7 @@ Este documento consolida o raio-x completo do protótipo desenvolvido, as decis�
 
 ### 1.3. Gestão Litúrgica e Interface Geral
 - **Banner Dinâmico do Tempo Litúrgico**:
-  - Identificação de cor litúrgica (Verde Comum, Branco Festivo, Azul Mariano, Roxo, Vermelho).
+  - Identificação de cor litúrgica (Verde Comum, Branco & Ouro, Azul Mariano, Roxo Advento, **Rosa Litúrgico / Domingo Gaudete**, Vermelho).
   - Apresentação da data, ano litúrgico e antífona do Salmo Responsorial.
 - **Seletor de Missas Planejadas por Data (Modelo B)**:
   - Modal agrupado por mês (Setembro e Outubro) permitindo seleção direta de qualquer data do calendário pastoral.
