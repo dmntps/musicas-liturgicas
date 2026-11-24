@@ -600,20 +600,12 @@ const dom = {
   // Elementos da Tela de Autenticação Obrigatória
   btnModeLogin: document.getElementById("btnModeLogin"),
   btnModeRegister: document.getElementById("btnModeRegister"),
-  btnGoogleAuth: document.getElementById("btnGoogleAuth"),
-  googleAuthText: document.getElementById("googleAuthText"),
-  authDividerText: document.getElementById("authDividerText"),
-  authLoginTabs: document.getElementById("authLoginTabs"),
-  tabMethodEmail: document.getElementById("tabMethodEmail"),
-  tabMethodPhone: document.getElementById("tabMethodPhone"),
+  authFeedbackBox: document.getElementById("authFeedbackBox"),
   formAuthEmail: document.getElementById("formAuthEmail"),
-  formAuthPhone: document.getElementById("formAuthPhone"),
   formAuthRegister: document.getElementById("formAuthRegister"),
   authInputEmail: document.getElementById("authInputEmail"),
   authInputPassword: document.getElementById("authInputPassword"),
-  authInputPhone: document.getElementById("authInputPhone"),
   btnSubmitEmailAuth: document.getElementById("btnSubmitEmailAuth"),
-  btnSubmitPhoneAuth: document.getElementById("btnSubmitPhoneAuth"),
   registerName: document.getElementById("registerName"),
   registerEmail: document.getElementById("registerEmail"),
   registerPhone: document.getElementById("registerPhone"),
@@ -628,26 +620,13 @@ const dom = {
   authLiturgicalTag: document.getElementById("authLiturgicalTag"),
   userDisplayName: document.getElementById("userDisplayName"),
 
-  // Modal de Acesso Google
-  googleAuthModal: document.getElementById("googleAuthModal"),
-  btnCloseGoogleModal: document.getElementById("btnCloseGoogleModal"),
-  googleModalTitle: document.getElementById("googleModalTitle"),
-  formGoogleModal: document.getElementById("formGoogleModal"),
-  googleModalEmail: document.getElementById("googleModalEmail"),
-  googleModalName: document.getElementById("googleModalName"),
-  googleModalPhone: document.getElementById("googleModalPhone"),
-  btnSubmitGoogleModal: document.getElementById("btnSubmitGoogleModal"),
-
-  // Modal de Recuperação de Senha
+  // Modal de Recuperação Real de Senha por E-mail
   recoveryModal: document.getElementById("recoveryModal"),
   btnCloseRecoveryModal: document.getElementById("btnCloseRecoveryModal"),
+  recoveryFeedbackBox: document.getElementById("recoveryFeedbackBox"),
   recoveryStep1: document.getElementById("recoveryStep1"),
   recoveryStep2: document.getElementById("recoveryStep2"),
-  recoveryStep3: document.getElementById("recoveryStep3"),
-  btnRecoverViaWhatsApp: document.getElementById("btnRecoverViaWhatsApp"),
-  btnRecoverViaEmail: document.getElementById("btnRecoverViaEmail"),
-  lblRecoveryInput: document.getElementById("lblRecoveryInput"),
-  recoveryInputContact: document.getElementById("recoveryInputContact"),
+  recoveryInputEmail: document.getElementById("recoveryInputEmail"),
   btnSendRecoveryCode: document.getElementById("btnSendRecoveryCode"),
   btnBackToRecoveryStep1: document.getElementById("btnBackToRecoveryStep1"),
   recoverySentNotice: document.getElementById("recoverySentNotice"),
@@ -758,10 +737,6 @@ const dom = {
   searchInput: document.getElementById("searchInput"),
   btnClearSearch: document.getElementById("btnClearSearch"),
   btnLoginHeader: document.getElementById("btnLoginHeader"),
-  loginModal: document.getElementById("loginModal"),
-  btnCloseLoginModal: document.getElementById("btnCloseLoginModal"),
-  btnGoogleMock: document.getElementById("btnGoogleMock"),
-  btnSubmitLogin: document.getElementById("btnSubmitLogin"),
 
   // Cifra Avulsa Modal
   cifraModal: document.getElementById("cifraModal"),
@@ -818,26 +793,48 @@ function switchActiveFolheto(folhetoId) {
 
 // ========================================================
 // SISTEMA DE AUTENTICAÇÃO OBRIGATÓRIA (TELA INICIAL)
-// Suporte a Entrar e Criar Conta Gratuita sem intermediários
+// Validação real fail-closed na Planilha Google (Apps Script v2.0)
 // ========================================================
+function showFeedbackBox(el, message, type = "error") {
+  if (!el) return;
+  if (!message) {
+    el.innerText = "";
+    el.className = "auth-feedback hidden";
+    return;
+  }
+  el.innerText = message;
+  el.className = `auth-feedback ${type}`;
+}
+
+function setAuthFeedback(message, type = "error") {
+  showFeedbackBox(dom.authFeedbackBox, message, type);
+}
+
+function setButtonLoading(btn, isLoading, loadingText, defaultHtml) {
+  if (!btn) return;
+  if (isLoading) {
+    if (!btn.dataset.originalHtml) {
+      btn.dataset.originalHtml = defaultHtml || btn.innerHTML;
+    }
+    btn.disabled = true;
+    btn.innerText = loadingText;
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = btn.dataset.originalHtml || defaultHtml || btn.innerHTML;
+  }
+}
+
 function setAuthMode(mode) {
   appState.authMode = mode;
+  setAuthFeedback("");
 
   if (mode === "login") {
     if (dom.btnModeLogin) dom.btnModeLogin.classList.add("active");
     if (dom.btnModeRegister) dom.btnModeRegister.classList.remove("active");
 
-    if (dom.authLoginTabs) dom.authLoginTabs.classList.remove("hidden");
     if (dom.formAuthRegister) dom.formAuthRegister.classList.add("hidden");
-
-    // Restaura o formulário ativo de acordo com a aba selecionada
-    const isEmailTab = dom.tabMethodEmail && dom.tabMethodEmail.classList.contains("active");
-    if (dom.formAuthEmail) dom.formAuthEmail.classList.toggle("hidden", !isEmailTab);
-    if (dom.formAuthPhone) dom.formAuthPhone.classList.toggle("hidden", isEmailTab);
-
-    if (dom.googleAuthText) dom.googleAuthText.innerText = "Continuar com o Google";
-    if (dom.authDividerText) dom.authDividerText.innerText = "ou acesse por credencial";
-    if (dom.licenseBadgeText) dom.licenseBadgeText.innerText = "App 100% Gratuito para Músicos";
+    if (dom.formAuthEmail) dom.formAuthEmail.classList.remove("hidden");
+    if (dom.licenseBadgeText) dom.licenseBadgeText.innerText = "Acesso Validado • App 100% Gratuito";
 
     if (dom.signupPromptText) {
       dom.signupPromptText.innerHTML = `Não possui conta? <a href="#" id="linkToggleAuthMode">Criar Conta Gratuita</a>`;
@@ -850,19 +847,12 @@ function setAuthMode(mode) {
       }
     }
   } else {
-    // Modo Cadastro / Criar Conta
     if (dom.btnModeRegister) dom.btnModeRegister.classList.add("active");
     if (dom.btnModeLogin) dom.btnModeLogin.classList.remove("active");
 
-    // No cadastro, ambos e-mail e celular são preenchidos juntos
-    if (dom.authLoginTabs) dom.authLoginTabs.classList.add("hidden");
     if (dom.formAuthEmail) dom.formAuthEmail.classList.add("hidden");
-    if (dom.formAuthPhone) dom.formAuthPhone.classList.add("hidden");
     if (dom.formAuthRegister) dom.formAuthRegister.classList.remove("hidden");
-
-    if (dom.googleAuthText) dom.googleAuthText.innerText = "Cadastrar com o Google";
-    if (dom.authDividerText) dom.authDividerText.innerText = "ou cadastre com seus dados";
-    if (dom.licenseBadgeText) dom.licenseBadgeText.innerText = "Acesso Livre & Gratuito para Músicos";
+    if (dom.licenseBadgeText) dom.licenseBadgeText.innerText = "Cadastro Gratuito para Músicos";
 
     if (dom.signupPromptText) {
       dom.signupPromptText.innerHTML = `Já tem uma conta? <a href="#" id="linkToggleAuthMode">Fazer Login</a>`;
@@ -933,15 +923,41 @@ function cycleNextLiturgicalTheme() {
 }
 
 // ========================================================
-// SISTEMA DE RECUPERAÇÃO DE SENHA (MODAL INTUITIVO)
+// SISTEMA REAL DE RECUPERAÇÃO DE SENHA POR E-MAIL (APPS SCRIPT v2.0)
 // ========================================================
 function setupRecoveryEvents() {
-  let recoveryChannel = "whatsapp"; // "whatsapp" | "email"
+  let recoveryEmail = "";
+
+  function setRecoveryFeedback(msg, type = "error") {
+    showFeedbackBox(dom.recoveryFeedbackBox, msg, type);
+  }
+
+  function showStep1() {
+    setRecoveryFeedback("");
+    if (dom.recoveryStep1) dom.recoveryStep1.classList.remove("hidden");
+    if (dom.recoveryStep2) dom.recoveryStep2.classList.add("hidden");
+    if (dom.recoveryInputEmail && dom.authInputEmail && dom.authInputEmail.value.trim()) {
+      dom.recoveryInputEmail.value = dom.authInputEmail.value.trim();
+    }
+  }
+
+  function showStep2() {
+    setRecoveryFeedback("");
+    if (dom.recoveryStep1) dom.recoveryStep1.classList.add("hidden");
+    if (dom.recoveryStep2) dom.recoveryStep2.classList.remove("hidden");
+    if (dom.recoveryCodeInput) dom.recoveryCodeInput.value = "";
+    if (dom.recoveryNewPassword) dom.recoveryNewPassword.value = "";
+    if (dom.recoveryConfirmPassword) dom.recoveryConfirmPassword.value = "";
+    if (dom.recoverySentNotice) {
+      dom.recoverySentNotice.innerText = `✅ Código de 6 dígitos enviado para ${recoveryEmail}! Verifique sua caixa de entrada e spam:`;
+    }
+  }
 
   function openRecoveryModal() {
     if (dom.recoveryModal) {
       dom.recoveryModal.classList.remove("hidden");
       showStep1();
+      if (dom.recoveryInputEmail) dom.recoveryInputEmail.focus();
     }
   }
 
@@ -951,83 +967,68 @@ function setupRecoveryEvents() {
     }
   }
 
-  function showStep1() {
-    if (dom.recoveryStep1) dom.recoveryStep1.classList.remove("hidden");
-    if (dom.recoveryStep2) dom.recoveryStep2.classList.add("hidden");
-    if (dom.recoveryStep3) dom.recoveryStep3.classList.add("hidden");
-  }
-
-  function showStep2(channel) {
-    recoveryChannel = channel;
-    if (dom.recoveryStep1) dom.recoveryStep1.classList.add("hidden");
-    if (dom.recoveryStep2) dom.recoveryStep2.classList.remove("hidden");
-    if (dom.recoveryStep3) dom.recoveryStep3.classList.add("hidden");
-
-    if (channel === "whatsapp") {
-      if (dom.lblRecoveryInput) dom.lblRecoveryInput.innerText = "Informe seu Celular cadastrado (com DDD):";
-      if (dom.recoveryInputContact) {
-        dom.recoveryInputContact.type = "tel";
-        dom.recoveryInputContact.placeholder = "(11) 98765-4321";
-      }
-    } else {
-      if (dom.lblRecoveryInput) dom.lblRecoveryInput.innerText = "Informe seu E-mail cadastrado:";
-      if (dom.recoveryInputContact) {
-        dom.recoveryInputContact.type = "email";
-        dom.recoveryInputContact.placeholder = "exemplo@gmail.com";
-      }
-    }
-  }
-
-  function showStep3() {
-    const contactValue = dom.recoveryInputContact ? dom.recoveryInputContact.value.trim() : "";
-    if (!contactValue) {
-      alert("Por favor, informe seu contato cadastrado para receber o código.");
+  async function sendRecoveryCode() {
+    const email = dom.recoveryInputEmail ? dom.recoveryInputEmail.value.trim().toLowerCase() : "";
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setRecoveryFeedback("Informe um endereço de e-mail válido.", "error");
       return;
     }
 
-    if (dom.recoveryStep2) dom.recoveryStep2.classList.add("hidden");
-    if (dom.recoveryStep3) dom.recoveryStep3.classList.remove("hidden");
+    setRecoveryFeedback("");
+    setButtonLoading(dom.btnSendRecoveryCode, true, "Enviando código por e-mail...");
 
-    if (dom.recoverySentNotice) {
-      const channelLabel = recoveryChannel === "whatsapp" ? `WhatsApp/SMS (${contactValue})` : `E-mail (${contactValue})`;
-      dom.recoverySentNotice.innerText = `✅ Código de 6 dígitos enviado para ${channelLabel}! Digite o código e crie sua nova senha:`;
+    const res = await callAuthApi({ action: "request_reset", email });
+    setButtonLoading(dom.btnSendRecoveryCode, false);
+
+    if (!res.ok) {
+      setRecoveryFeedback(res.message || "Não foi possível enviar o código.", "error");
+      return;
     }
+
+    recoveryEmail = email;
+    showStep2();
   }
 
-  function finishPasswordReset() {
+  async function finishPasswordReset() {
     const code = dom.recoveryCodeInput ? dom.recoveryCodeInput.value.trim() : "";
-    const pass1 = dom.recoveryNewPassword ? dom.recoveryNewPassword.value.trim() : "";
-    const pass2 = dom.recoveryConfirmPassword ? dom.recoveryConfirmPassword.value.trim() : "";
+    const pass1 = dom.recoveryNewPassword ? dom.recoveryNewPassword.value : "";
+    const pass2 = dom.recoveryConfirmPassword ? dom.recoveryConfirmPassword.value : "";
 
-    if (!code || code.length < 4) {
-      alert("Por favor, digite o código de verificação recebido.");
+    if (!/^\d{6}$/.test(code)) {
+      setRecoveryFeedback("Digite o código numérico de 6 dígitos enviado ao seu e-mail.", "error");
       return;
     }
-
     if (!pass1 || pass1.length < 6) {
-      alert("A nova senha deve possuir pelo menos 6 caracteres.");
+      setRecoveryFeedback("A nova senha deve possuir no mínimo 6 caracteres.", "error");
+      return;
+    }
+    if (pass1 !== pass2) {
+      setRecoveryFeedback("As senhas digitadas não coincidem. Verifique e tente novamente.", "error");
       return;
     }
 
-    if (pass1 !== pass2) {
-      alert("As senhas digitadas não coincidem. Verifique e tente novamente.");
+    setRecoveryFeedback("");
+    setButtonLoading(dom.btnSubmitNewPassword, true, "Salvando nova senha...");
+
+    const res = await callAuthApi({
+      action: "confirm_reset",
+      email: recoveryEmail,
+      code: code,
+      newPassword: pass1
+    });
+    setButtonLoading(dom.btnSubmitNewPassword, false);
+
+    if (!res.ok || !res.user) {
+      setRecoveryFeedback(res.message || "Não foi possível redefinir a senha.", "error");
       return;
     }
 
     closeRecoveryModal();
-    showToast("🔑 Senha redefinida com sucesso! Acessando repertório...");
-
-    // Loga o usuário diretamente com suas credenciais atualizadas
-    loginSuccess({
-      name: "Diogo Nunes",
-      email: "diogo.musica@paroquia.com",
-      phone: "(11) 98765-4321",
-      method: "Recuperação de Senha",
-      role: "Músico Litúrgico"
-    });
+    setAuthFeedback("");
+    loginSuccess(res.user);
+    showToast("🔑 Senha atualizada com sucesso!");
   }
 
-  // Event Listeners da Recuperação
   if (dom.linkForgotPassword) {
     dom.linkForgotPassword.addEventListener("click", (e) => {
       e.preventDefault();
@@ -1038,13 +1039,10 @@ function setupRecoveryEvents() {
   if (dom.btnCloseRecoveryModal) {
     dom.btnCloseRecoveryModal.addEventListener("click", closeRecoveryModal);
   }
-
-  if (dom.btnRecoverViaWhatsApp) {
-    dom.btnRecoverViaWhatsApp.addEventListener("click", () => showStep2("whatsapp"));
-  }
-
-  if (dom.btnRecoverViaEmail) {
-    dom.btnRecoverViaEmail.addEventListener("click", () => showStep2("email"));
+  if (dom.recoveryModal) {
+    dom.recoveryModal.addEventListener("click", (e) => {
+      if (e.target === dom.recoveryModal) closeRecoveryModal();
+    });
   }
 
   if (dom.btnBackToRecoveryStep1) {
@@ -1052,7 +1050,7 @@ function setupRecoveryEvents() {
   }
 
   if (dom.btnSendRecoveryCode) {
-    dom.btnSendRecoveryCode.addEventListener("click", showStep3);
+    dom.btnSendRecoveryCode.addEventListener("click", sendRecoveryCode);
   }
 
   if (dom.btnSubmitNewPassword) {
@@ -1069,201 +1067,106 @@ function setupAuthEvents() {
     dom.btnModeRegister.addEventListener("click", () => setAuthMode("register"));
   }
 
-  // Alternar Método de Credencial (somente no Modo Entrar): E-mail vs Celular/SMS
-  if (dom.tabMethodEmail && dom.tabMethodPhone) {
-    dom.tabMethodEmail.addEventListener("click", () => {
-      dom.tabMethodEmail.classList.add("active");
-      dom.tabMethodPhone.classList.remove("active");
-      if (dom.formAuthEmail) dom.formAuthEmail.classList.remove("hidden");
-      if (dom.formAuthPhone) dom.formAuthPhone.classList.add("hidden");
-    });
-
-    dom.tabMethodPhone.addEventListener("click", () => {
-      dom.tabMethodPhone.classList.add("active");
-      dom.tabMethodEmail.classList.remove("active");
-      if (dom.formAuthPhone) dom.formAuthPhone.classList.remove("hidden");
-      if (dom.formAuthEmail) dom.formAuthEmail.classList.add("hidden");
-    });
-  }
-
-  // 1. Acesso com Google (Abre Modal Elegante Integrado)
-  if (dom.btnGoogleAuth) {
-    dom.btnGoogleAuth.addEventListener("click", () => {
-      const isRegister = (appState.authMode === "register");
-      if (dom.googleModalTitle) {
-        dom.googleModalTitle.innerText = isRegister ? "Cadastrar com Conta Google" : "Acesso com Conta Google";
-      }
-      if (dom.googleAuthModal) {
-        dom.googleAuthModal.classList.remove("hidden");
-        if (dom.googleModalEmail) dom.googleModalEmail.focus();
-      }
-    });
-  }
-
-  // Fechar Modal Google
-  if (dom.btnCloseGoogleModal) {
-    dom.btnCloseGoogleModal.addEventListener("click", () => {
-      if (dom.googleAuthModal) dom.googleAuthModal.classList.add("hidden");
-    });
-  }
-  if (dom.googleAuthModal) {
-    dom.googleAuthModal.addEventListener("click", (e) => {
-      if (e.target === dom.googleAuthModal) dom.googleAuthModal.classList.add("hidden");
-    });
-  }
-
-  // Submissão do Modal Google
-  if (dom.formGoogleModal) {
-    dom.formGoogleModal.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const email = dom.googleModalEmail ? dom.googleModalEmail.value.trim().toLowerCase() : "";
-      const name = dom.googleModalName ? dom.googleModalName.value.trim() : "";
-      const phone = dom.googleModalPhone ? dom.googleModalPhone.value.trim() : "";
-
-      if (!email || !email.includes("@")) {
-        alert("Por favor, informe seu e-mail do Gmail.");
-        return;
-      }
-      if (!name || name.length < 3) {
-        alert("Por favor, digite seu nome completo.");
-        return;
-      }
-      if (!phone || phone.length < 8) {
-        alert("Por favor, informe seu celular/WhatsApp para contato.");
-        return;
-      }
-
-      if (dom.googleAuthModal) dom.googleAuthModal.classList.add("hidden");
-
-      const isRegister = (appState.authMode === "register");
-      loginSuccess({
-        name: name,
-        email: email,
-        phone: phone,
-        method: isRegister ? "Google (Cadastro)" : "Google (Login)",
-        role: "Músico / Animador Litúrgico"
-      });
-      showToast(`✅ Bem-vindo pelo Google, ${name}!`);
-    });
-  }
-
-  // 2. Login por E-mail & Senha
+  // 1. Login Real por E-mail & Senha (Fail-Closed contra Apps Script v2.0)
   if (dom.formAuthEmail) {
-    dom.formAuthEmail.addEventListener("submit", (e) => {
+    dom.formAuthEmail.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const email = dom.authInputEmail ? dom.authInputEmail.value.trim() : "";
-      const pass = dom.authInputPassword ? dom.authInputPassword.value.trim() : "";
+      const email = dom.authInputEmail ? dom.authInputEmail.value.trim().toLowerCase() : "";
+      const pass = dom.authInputPassword ? dom.authInputPassword.value : "";
 
-      if (!email || !email.includes("@")) {
-        alert("Por favor, digite um e-mail válido.");
-        return;
-      }
-      if (!pass || pass.length < 4) {
-        alert("Por favor, digite sua senha de acesso.");
-        return;
-      }
-
-      // Procura se o usuário já tem cadastro no aparelho
-      const localUsers = JSON.parse(localStorage.getItem("liturgia_registered_users") || "{}");
-      const existingUser = localUsers[email.toLowerCase()];
-
-      if (existingUser) {
-        if (existingUser.password && existingUser.password !== pass) {
-          alert("Senha incorreta. Verifique sua senha ou clique em 'Esqueceu a senha?'.");
-          return;
-        }
-        loginSuccess({
-          name: existingUser.name,
-          email: existingUser.email,
-          phone: existingUser.phone,
-          method: "E-mail (Login)",
-          role: "Músico Litúrgico"
-        });
-      } else {
-        // Se ainda não cadastrou neste aparelho, extrai o nome e avisa
-        const namePart = email.split("@")[0].replace(/[._-]/g, " ");
-        const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
-        loginSuccess({
-          name: formattedName,
-          email: email,
-          phone: "(Cadastrado por Login)",
-          method: "E-mail (Login Direto)",
-          role: "Músico Litúrgico"
-        });
-      }
-    });
-  }
-
-  // 3. Login por Celular / SMS
-  if (dom.formAuthPhone) {
-    dom.formAuthPhone.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const phone = dom.authInputPhone ? dom.authInputPhone.value.trim() : "";
-      if (!phone || phone.length < 8) {
-        alert("Por favor, informe seu celular com DDD.");
-        return;
-      }
-
-      const inputName = prompt("Informe seu nome completo para concluir o acesso:", "") || `Músico (${phone})`;
-      loginSuccess({
-        name: inputName.trim(),
-        email: "(Acesso via Celular)",
-        phone: phone,
-        method: "Celular/SMS (Login)",
-        role: "Músico Litúrgico"
-      });
-    });
-  }
-
-  // 4. Formulário Unificado de Cadastro (Exige Nome, E-mail, Celular e Senha Reais)
-  if (dom.formAuthRegister) {
-    dom.formAuthRegister.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const name = dom.registerName ? dom.registerName.value.trim() : "";
-      const email = dom.registerEmail ? dom.registerEmail.value.trim() : "";
-      const phone = dom.registerPhone ? dom.registerPhone.value.trim() : "";
-      const pass = dom.registerPassword ? dom.registerPassword.value.trim() : "";
-      const confirmPass = dom.registerConfirmPassword ? dom.registerConfirmPassword.value.trim() : "";
-
-      if (!name || name.length < 3) {
-        alert("Por favor, preencha seu nome completo.");
-        return;
-      }
-      if (!email || !email.includes("@")) {
-        alert("Por favor, informe um e-mail válido.");
-        return;
-      }
-      if (!phone || phone.length < 8) {
-        alert("Por favor, informe um telefone/WhatsApp válido para contato e recuperação de conta.");
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setAuthFeedback("Por favor, digite um e-mail válido.", "error");
         return;
       }
       if (!pass || pass.length < 6) {
-        alert("A senha deve ter no mínimo 6 caracteres.");
-        return;
-      }
-      if (pass !== confirmPass) {
-        alert("As senhas digitadas não conferem. Por favor, confirme a mesma senha.");
+        setAuthFeedback("Digite sua senha cadastrada (mínimo 6 caracteres).", "error");
         return;
       }
 
-      // Salva o cadastro localmente no aparelho para login futuro
-      const localUsers = JSON.parse(localStorage.getItem("liturgia_registered_users") || "{}");
-      localUsers[email.toLowerCase()] = {
+      setAuthFeedback("Consultando credenciais na Pastoral...", "info");
+      setButtonLoading(dom.btnSubmitEmailAuth, true, "Validando acesso...");
+
+      const res = await callAuthApi({
+        action: "login",
+        email: email,
+        password: pass
+      });
+
+      setButtonLoading(dom.btnSubmitEmailAuth, false);
+
+      if (!res.ok || !res.user || !res.user.email) {
+        setAuthFeedback(res.message || "Não foi possível validar suas credenciais.", "error");
+        return;
+      }
+
+      setAuthFeedback("");
+      loginSuccess(res.user);
+    });
+  }
+
+  // 2. Cadastro Real de Nova Conta (Salvo com Hash SHA-256 na Planilha Google)
+  if (dom.formAuthRegister) {
+    dom.formAuthRegister.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = dom.registerName ? dom.registerName.value.trim() : "";
+      const email = dom.registerEmail ? dom.registerEmail.value.trim().toLowerCase() : "";
+      const phone = dom.registerPhone ? dom.registerPhone.value.trim() : "";
+      const pass = dom.registerPassword ? dom.registerPassword.value : "";
+      const confirmPass = dom.registerConfirmPassword ? dom.registerConfirmPassword.value : "";
+
+      if (!name || name.length < 3) {
+        setAuthFeedback("Por favor, preencha seu nome completo.", "error");
+        return;
+      }
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setAuthFeedback("Por favor, informe um e-mail válido.", "error");
+        return;
+      }
+      const phoneDigits = phone.replace(/\D/g, "");
+      if (phoneDigits.length < 8) {
+        setAuthFeedback("Informe um telefone/WhatsApp válido com DDD.", "error");
+        return;
+      }
+      if (!pass || pass.length < 6) {
+        setAuthFeedback("A senha deve ter no mínimo 6 caracteres.", "error");
+        return;
+      }
+      if (pass !== confirmPass) {
+        setAuthFeedback("As senhas digitadas não conferem.", "error");
+        return;
+      }
+
+      setAuthFeedback("Registrando sua conta na Planilha da Pastoral...", "info");
+      setButtonLoading(dom.btnSubmitRegister, true, "Criando conta...");
+
+      const res = await callAuthApi({
+        action: "register",
         name: name,
         email: email,
         phone: phone,
         password: pass
-      };
-      localStorage.setItem("liturgia_registered_users", JSON.stringify(localUsers));
-
-      loginSuccess({
-        name: name,
-        email: email,
-        phone: phone,
-        method: "Criar Conta Gratuita",
-        role: "Músico Litúrgico"
       });
-      showToast("✅ Conta criada com sucesso! Seja bem-vindo.");
+
+      setButtonLoading(dom.btnSubmitRegister, false);
+
+      if (!res.ok) {
+        setAuthFeedback(res.message || "Não foi possível criar sua conta.", "error");
+        return;
+      }
+
+      if (res.user && String(res.user.status || "").toLowerCase() === "pendente") {
+        setAuthFeedback("Cadastro enviado! Aguarde a coordenação liberar seu acesso na planilha.", "info");
+        return;
+      }
+
+      if (!res.user || !res.user.email) {
+        setAuthFeedback("Resposta inválida ao concluir cadastro.", "error");
+        return;
+      }
+
+      setAuthFeedback("");
+      loginSuccess(res.user);
+      showToast("✅ Conta criada e validada com sucesso!");
     });
   }
 
@@ -1275,7 +1178,7 @@ function setupAuthEvents() {
     });
   }
 
-  // Configura fluxo de recuperação
+  // Configura fluxo real de recuperação por e-mail
   setupRecoveryEvents();
 
   const initialToggleLink = document.getElementById("linkToggleAuthMode");
@@ -1794,53 +1697,112 @@ function setupAudioStudioEvents() {
   }
 }
 
-// URL do Webhook do Google Sheets para Registro de Usuários
+// ========================================================
+// CAMADA DE COMUNICAÇÃO SEGURA COM O APPS SCRIPT v2.0 (FAIL-CLOSED)
+// ========================================================
+const AUTH_API_VERSION = "2.0";
+const AUTH_APP_KEY = "liturgia_piedade_2026_v2";
 const GOOGLE_SHEETS_USERS_WEBHOOK = "https://script.google.com/macros/s/AKfycbz4Gs_ByQL7OWJl9IG2tEeeajt9Vz3AxbJNsVpfUbuHHfnHiUoWVQthKZVIIxoRViso_w/exec";
 
-function syncUserToGoogleSheets(user) {
-  if (!GOOGLE_SHEETS_USERS_WEBHOOK || !user) return;
+async function callAuthApi(payload) {
+  if (!GOOGLE_SHEETS_USERS_WEBHOOK) {
+    return {
+      ok: false,
+      code: "NO_BACKEND",
+      message: "Servidor de autenticação não configurado."
+    };
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
   try {
-    fetch(GOOGLE_SHEETS_USERS_WEBHOOK, {
+    const res = await fetch(GOOGLE_SHEETS_USERS_WEBHOOK, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
+      redirect: "follow",
+      signal: controller.signal,
       body: JSON.stringify({
-        name: user.name || "",
-        email: user.email || "",
-        phone: user.phone || "",
-        method: user.method || "Acesso Direto"
+        ...payload,
+        appKey: AUTH_APP_KEY
       })
-    }).then(res => res.json()).then(data => {
-      console.log("Usuário registrado no Google Sheets:", data);
-    }).catch(err => {
-      console.warn("Nota: registro em segundo plano no Google Sheets:", err);
     });
-  } catch (e) {
-    console.warn("Erro ao sincronizar com Google Sheets:", e);
+
+    const rawText = await res.text();
+    let data = null;
+    try {
+      data = JSON.parse(rawText);
+    } catch (eParse) {
+      return {
+        ok: false,
+        code: "BACKEND_OUTDATED",
+        message: "O servidor de autenticação da Planilha precisa ser atualizado para a versão 2.0 (Apps Script)."
+      };
+    }
+
+    // Fail-closed: recusa respostas do webhook legado (sem authVersion === "2.0")
+    if (!data || data.authVersion !== AUTH_API_VERSION) {
+      return {
+        ok: false,
+        code: "BACKEND_OUTDATED",
+        message: "O servidor de autenticação da Planilha precisa ser atualizado para a versão 2.0 (Apps Script)."
+      };
+    }
+
+    return data;
+  } catch (err) {
+    return {
+      ok: false,
+      code: "NETWORK_ERROR",
+      message: "Sem conexão com o servidor de autenticação. Verifique sua internet e tente novamente."
+    };
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
-function loginSuccess(user, shouldSync = true) {
+async function revalidateActiveSession(user) {
+  if (!user || !user.email) return;
+  const res = await callAuthApi({
+    action: "validate_session",
+    email: user.email
+  });
+
+  // Se estiver offline/instável na igreja, preserva a sessão local;
+  // Se o servidor responder explicitamente que a conta foi bloqueada, revogada ou removida, desconecta na hora.
+  if (!res.ok && ["BLOCKED", "SESSION_REVOKED", "PENDING", "NOT_FOUND", "NEEDS_PASSWORD"].includes(res.code)) {
+    logoutUser(res.message || "Sua sessão foi encerrada pela coordenação.");
+  }
+}
+
+function loginSuccess(user) {
+  if (!user || !user.email) return;
+  const normalizedUser = {
+    name: user.name || "",
+    email: String(user.email).trim().toLowerCase(),
+    phone: user.phone || "",
+    method: user.method || "E-mail e Senha",
+    status: user.status || "Ativo",
+    role: user.role || "Músico Litúrgico",
+    authVersion: AUTH_API_VERSION
+  };
+
   appState.isAuthenticated = true;
-  appState.currentUser = user;
-  localStorage.setItem("liturgia_user_session", JSON.stringify(user));
+  appState.currentUser = normalizedUser;
+  localStorage.setItem("liturgia_user_session", JSON.stringify(normalizedUser));
 
   if (dom.userDisplayName) {
-    dom.userDisplayName.innerText = `${user.name}`;
+    dom.userDisplayName.innerText = `${normalizedUser.name}`;
   }
   if (dom.userDisplayNameMasses) {
-    dom.userDisplayNameMasses.innerText = `${user.name}`;
-  }
-
-  // Registra silenciosamente na sua planilha do Google Drive
-  if (shouldSync) {
-    syncUserToGoogleSheets(user);
+    dom.userDisplayNameMasses.innerText = `${normalizedUser.name}`;
   }
 
   openMassesScreen();
-  showToast(`✝ Bem-vindo, ${user.name}! Escolha a missa.`);
+  showToast(`✝ Bem-vindo, ${normalizedUser.name}! Escolha a missa.`);
 }
 
-function logoutUser() {
+function logoutUser(reasonMessage = "") {
   appState.isAuthenticated = false;
   appState.currentUser = null;
   localStorage.removeItem("liturgia_user_session");
@@ -1851,11 +1813,20 @@ function logoutUser() {
   if (dom.authScreen) dom.authScreen.classList.remove("hidden");
   appState.currentScreen = "auth";
 
-  showToast("Você desconectou da sua conta.");
+  if (reasonMessage) {
+    setAuthFeedback(reasonMessage, "error");
+    showToast("Acesso encerrado.");
+  } else {
+    setAuthFeedback("");
+    showToast("Você desconectou da sua conta.");
+  }
 }
 
 // Inicialização da Aplicação
 function initApp() {
+  // Remove qualquer rastro antigo de senhas em texto puro no localStorage
+  localStorage.removeItem("liturgia_registered_users");
+
   setupAuthEvents();
   setupMassesEvents();
   setupHomeEvents();
@@ -1876,13 +1847,18 @@ function initApp() {
   applyLiturgicalTheme(loginTheme);
   selectMassDate(initialDate);
 
-  // Verificar se o usuário já possui sessão ativa gravada
+  // Verificar se o usuário já possui sessão v2.0 válida gravada
   const savedSession = localStorage.getItem("liturgia_user_session");
   if (savedSession) {
     try {
       const user = JSON.parse(savedSession);
-      loginSuccess(user, false);
-    } catch(e) {
+      if (user && user.email && user.authVersion === AUTH_API_VERSION) {
+        loginSuccess(user);
+        revalidateActiveSession(user);
+      } else {
+        logoutUser("Atualizamos a segurança do app. Entre novamente com seu e-mail e senha.");
+      }
+    } catch (e) {
       logoutUser();
     }
   } else {

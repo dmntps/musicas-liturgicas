@@ -3787,4 +3787,44 @@ body {
   margin-top: 6px;
 }
 
+/* ========================================================
+   🔐 FEEDBACK DE VALIDAÇÃO REAL & ESTADO DE CARREGAMENTO
+   ======================================================== */
+.auth-feedback {
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 12px;
+  text-align: left;
+  border: 1.5px solid transparent;
+}
+
+.auth-feedback.error {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.auth-feedback.success {
+  background: #f0fdf4;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.auth-feedback.info {
+  background: #eff6ff;
+  color: #1e40af;
+  border-color: #bfdbfe;
+}
+
+.btn-auth-submit:disabled,
+.btn-primary-block:disabled {
+  opacity: 0.65;
+  cursor: wait;
+  transform: none !important;
+}
+
+
 

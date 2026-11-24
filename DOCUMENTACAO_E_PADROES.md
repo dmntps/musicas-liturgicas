@@ -126,6 +126,16 @@ Cada celebração é identificada pela sua chave ISO `AAAA-MM-DD`:
 - **Boletim Padrão do Usuário**: `liturgia_boletim_padrao` (ex: `"caderno-piedade"`, `"o-domingo"`).
 - **Tom Customizado por Missa**: `tom_missa_{dateKey}_{songId}` (armazena o deslocamento em semitons, ex: `2` ou `-1`).
 - **Capotraste por Missa**: `capo_missa_{dateKey}_{songId}` (armazena a casa do capotraste de `0` a `7`).
+- **Sessão Validada (sem senha)**: `liturgia_user_session` (grava exclusivamente dados públicos do perfil validado pelo Apps Script `authVersion: "2.0"`; nenhuma senha é salva no navegador).
+
+### 2.6. Governança e Autenticação Real via Planilha Google (Apps Script v2.0)
+- **Backend Oficial**: [`backend/google_apps_script_auth.gs`](backend/google_apps_script_auth.gs) conectado via webhook HTTPS (`POST`).
+- **Colunas da Planilha**: `Data/Hora` | `Nome` | `E-mail` | `Telefone` | `Método` | `Senha` (`sha256$<salt>$<hex>`) | `Status` (`Ativo` / `Bloqueado` / `Pendente`) | `Último Acesso`.
+- **Segurança Fail-Closed no Frontend (`js/app.js`)**:
+  - `callAuthApi()` exige `authVersion === "2.0"` na resposta do servidor — respostas antigas ou de erro bloqueiam o acesso e exibem aviso claro na tela.
+  - Removidos acessos simulados (*Google modal*, *SMS fictício*, *Login Direto sem cadastro* e modal legado `#loginModal`).
+  - Revalidação silenciosa da sessão (`validate_session`) em segundo plano ao reabrir o app: mantém funcionamento offline quando sem rede, mas desconecta imediatamente caso o usuário seja marcado como `Bloqueado` ou `Pendente` na planilha.
+  - Recuperação real de senha em 2 etapas via `MailApp.sendEmail` (código de 6 dígitos com validade de 15 minutos, cooldown de 60s e máximo de 5 tentativas).
 
 ---
 
@@ -134,24 +144,21 @@ Cada celebração é identificada pela sua chave ISO `AAAA-MM-DD`:
 ```text
 musicas-liturgicas-proto/
 │
-├── audios/                      # 77 arquivos MP3 reais para ensaio
-│   ├── 23-1.mp3 ... 23-10.mp3
-│   ├── aparecida-1.mp3 ...
+├── backend/
+│   └── google_apps_script_auth.gs # Servidor Apps Script v2.0 (hash SHA-256, status e reset por e-mail)
+│
+├── audios/                        # 40 arquivos MP3 reais deduplicados para ensaio
 │
 ├── css/
-│   └── styles.css               # Estilos com Design System, tema escuro e layout responsivo
+│   └── styles.css                 # Estilos com Design System, temas litúrgicos (incl. Rosa Gaudete) e feedback de auth
 │
 ├── js/
-│   ├── app.js                   # Lógica central: reprodução, transposição, capotraste, auto-scroll, modais
-│   ├── dados_reais.js           # Catálogo homologado da Paróquia (Setembro e Outubro de 2026)
-│   └── dados_o_domingo.js       # Catálogo do Folheto "O Domingo" (Paulus) com vídeos e streaming
+│   ├── app.js                     # Lógica central: autenticação v2.0 fail-closed, reprodução, transposição, editor de cifras, PDF
+│   ├── dados_reais.js             # Catálogo homologado da Paróquia (Cristo Rei 22/11 até 4º Domingo do Advento 20/12)
+│   └── dados_o_domingo.js         # Catálogo do Folheto "O Domingo" (Paulus)
 │
-├── index.html                   # Estrutura do App Shell (Home, Modo Palco e Modais)
-├── DOCUMENTACAO_E_PADROES.md    # Este documento oficial de referência
-│
-└── [scripts de apoio/build]     # Utilitários de extração (Node.js/Python)
-    ├── build_dados_reais.js
-    └── extrair_e_gerar_dados.py
+├── index.html                     # Estrutura do App Shell (Login/Cadastro, Hub, Roteiro, Estúdio de Áudio e Palco)
+└── DOCUMENTACAO_E_PADROES.md      # Este documento oficial de referência
 ```
 
 ---
