@@ -548,7 +548,7 @@ const dom = {
   audioScreen: document.getElementById("audioScreen"),
   stageScreen: document.getElementById("stageScreen"),
 
-  // Mini-Player Persistente Global
+  // Mini-Player Persistente Global & Instalação PWA
   globalMiniPlayer: document.getElementById("globalMiniPlayer"),
   miniPlayerOpenAudio: document.getElementById("miniPlayerOpenAudio"),
   miniPlayerTitle: document.getElementById("miniPlayerTitle"),
@@ -556,6 +556,12 @@ const dom = {
   btnMiniPlayPause: document.getElementById("btnMiniPlayPause"),
   btnMiniNext: document.getElementById("btnMiniNext"),
   btnMiniClose: document.getElementById("btnMiniClose"),
+  btnInstallAppMasses: document.getElementById("btnInstallAppMasses"),
+  btnInstallAppHome: document.getElementById("btnInstallAppHome"),
+  installGuideModal: document.getElementById("installGuideModal"),
+  btnCloseInstallModal: document.getElementById("btnCloseInstallModal"),
+  btnConfirmInstallClose: document.getElementById("btnConfirmInstallClose"),
+  installGuideSteps: document.getElementById("installGuideSteps"),
 
   // Elementos do Hub de Missas (Tela 1 Pós-Login)
   userDisplayNameMasses: document.getElementById("userDisplayNameMasses"),
@@ -1995,6 +2001,7 @@ function initApp() {
   setupRealAudioElementEvents();
   initMediaSessionHandlers();
   setupGlobalMiniPlayerEvents();
+  setupPwaInstallEvents();
   setupAuthEvents();
   setupMassesEvents();
   setupHomeEvents();
@@ -4491,6 +4498,107 @@ function exportMassRepertoireToPdf() {
   printWindow.document.open();
   printWindow.document.write(fullPrintHtml);
   printWindow.document.close();
+}
+
+// ========================================================
+// INSTALAÇÃO DO APP (PWA 1-CLIQUE + GUIA iOS / ANDROID)
+// ========================================================
+let deferredInstallPrompt = null;
+
+function isRunningStandalone() {
+  return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches)
+    || window.navigator.standalone === true;
+}
+
+function updateInstallButtonsVisibility() {
+  const hide = isRunningStandalone();
+  if (dom.btnInstallAppMasses) dom.btnInstallAppMasses.classList.toggle("hidden", hide);
+  if (dom.btnInstallAppHome) dom.btnInstallAppHome.classList.toggle("hidden", hide);
+}
+
+function closeInstallGuideModal() {
+  if (dom.installGuideModal) dom.installGuideModal.classList.add("hidden");
+}
+
+function openInstallGuideModal() {
+  if (!dom.installGuideModal) return;
+  const ua = navigator.userAgent || "";
+  const isIos = /iphone|ipad|ipod/i.test(ua);
+  const isAndroid = /android/i.test(ua);
+
+  let stepsHtml = "";
+  if (isIos) {
+    stepsHtml = `
+      <div class="install-step-item"><strong>1.</strong> No <strong>Safari</strong>, toque no botão <strong>Compartilhar</strong> (ícone de quadrado com seta para cima) na barra inferior.</div>
+      <div class="install-step-item"><strong>2.</strong> Role para baixo e toque em <strong>“Adicionar à Tela de Início”</strong>, depois confirme em <strong>Adicionar</strong>.</div>
+    `;
+  } else if (isAndroid) {
+    stepsHtml = `
+      <div class="install-step-item"><strong>1.</strong> No navegador (<strong>Chrome</strong> ou Edge), toque no menu <strong>⋮</strong> no canto superior direito.</div>
+      <div class="install-step-item"><strong>2.</strong> Toque em <strong>“Instalar aplicativo”</strong> ou <strong>“Adicionar à tela inicial”</strong> para criar o atalho oficial.</div>
+    `;
+  } else {
+    stepsHtml = `
+      <div class="install-step-item"><strong>1.</strong> No <strong>Chrome</strong> ou <strong>Microsoft Edge</strong>, clique no ícone de <strong>Instalar App</strong> na barra de endereços (ou no menu <strong>⋮ / …</strong>).</div>
+      <div class="install-step-item"><strong>2.</strong> Confirme em <strong>“Instalar”</strong> para abrir o Músicas Litúrgicas em janela própria na tela cheia.</div>
+    `;
+  }
+
+  if (dom.installGuideSteps) dom.installGuideSteps.innerHTML = stepsHtml;
+  dom.installGuideModal.classList.remove("hidden");
+}
+
+async function triggerPwaInstall() {
+  if (deferredInstallPrompt) {
+    try {
+      deferredInstallPrompt.prompt();
+      const choice = await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      updateInstallButtonsVisibility();
+      if (choice && choice.outcome === "accepted") {
+        showToast("📲 Instalando Músicas Litúrgicas na tela inicial...");
+      }
+      return;
+    } catch (e) {
+      deferredInstallPrompt = null;
+    }
+  }
+  openInstallGuideModal();
+}
+
+function setupPwaInstallEvents() {
+  updateInstallButtonsVisibility();
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    updateInstallButtonsVisibility();
+  });
+
+  window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+    updateInstallButtonsVisibility();
+    closeInstallGuideModal();
+    showToast("📲 Aplicativo instalado na tela inicial!");
+  });
+
+  if (dom.btnInstallAppMasses) {
+    dom.btnInstallAppMasses.addEventListener("click", triggerPwaInstall);
+  }
+  if (dom.btnInstallAppHome) {
+    dom.btnInstallAppHome.addEventListener("click", triggerPwaInstall);
+  }
+  if (dom.btnCloseInstallModal) {
+    dom.btnCloseInstallModal.addEventListener("click", closeInstallGuideModal);
+  }
+  if (dom.btnConfirmInstallClose) {
+    dom.btnConfirmInstallClose.addEventListener("click", closeInstallGuideModal);
+  }
+  if (dom.installGuideModal) {
+    dom.installGuideModal.addEventListener("click", (e) => {
+      if (e.target === dom.installGuideModal) closeInstallGuideModal();
+    });
+  }
 }
 
 // ========================================================

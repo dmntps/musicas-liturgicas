@@ -133,29 +133,99 @@ body {
   color: var(--text-secondary);
 }
 
-.btn-login {
+.user-action {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-install-app {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--color-gold-light);
+  color: var(--color-gold-dark);
+  border: 1.5px solid rgba(198, 146, 20, 0.45);
+  padding: 6px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.76rem;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition-fast);
+}
+
+.btn-install-app:hover {
+  background: var(--color-gold);
+  color: #ffffff;
+  border-color: var(--color-gold);
+}
+
+.btn-login {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   background: var(--color-liturgical-green-light);
   color: var(--color-liturgical-green);
   border: 1px solid rgba(31, 111, 67, 0.2);
-  padding: 6px 12px;
+  padding: 6px 10px;
   border-radius: var(--radius-full);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition-fast);
   white-space: nowrap;
-  max-width: 170px;
+  max-width: 160px;
 }
 
 .btn-login .btn-label {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 132px;
+  max-width: 112px;
   display: inline-block;
+}
+
+@media (max-width: 440px) {
+  .app-header {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .brand-section {
+    gap: 8px;
+    min-width: 0;
+  }
+  .brand-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .brand-title {
+    font-size: 0.94rem;
+  }
+  .brand-subtitle {
+    font-size: 0.66rem;
+  }
+  .btn-install-app {
+    padding: 5px 8px;
+    font-size: 0.72rem;
+  }
+  .btn-login {
+    padding: 5px 9px;
+    font-size: 0.74rem;
+    max-width: 122px;
+  }
+  .btn-login .btn-label {
+    max-width: 96px;
+  }
+}
+
+@media (max-width: 370px) {
+  .btn-install-app .install-label {
+    display: none;
+  }
 }
 
 .btn-login:hover {
@@ -4224,6 +4294,40 @@ body {
   .stage-cifra-box {
     max-width: 1240px;
   }
+}
+
+/* ========================================================
+   📲 MODAL DE INSTALAÇÃO DO APP (PWA)
+   ======================================================== */
+.install-modal-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  margin: 0 auto 10px auto;
+  display: block;
+}
+
+.install-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  margin: 14px 0 18px 0;
+}
+
+.install-step-item {
+  background: var(--bg-app);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-main);
+}
+
+.install-step-item strong {
+  color: var(--color-liturgical-green-dark);
 }
 
 

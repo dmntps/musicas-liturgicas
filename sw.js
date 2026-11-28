@@ -1,4 +1,4 @@
-const CACHE_NAME = "liturgia-piedade-v2026-11-28-r3";
+const CACHE_NAME = "liturgia-piedade-v2026-11-28-r4";
 const CORE_SHELL_URLS = [
   "./",
   "./index.html",

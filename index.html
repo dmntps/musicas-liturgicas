@@ -163,8 +163,12 @@
           </div>
         </div>
 
-        <!-- Identificação do Usuário Logado -->
+        <!-- Ações do Usuário Logado (Instalar + Perfil) -->
         <div class="user-action">
+          <button type="button" class="btn-install-app" id="btnInstallAppMasses" title="Instalar aplicativo no celular ou PC">
+            <span class="btn-icon">📲</span>
+            <span class="install-label">Instalar</span>
+          </button>
           <button class="btn-login" id="btnUserMassesHeader" title="Perfil do Músico">
             <span class="btn-icon">👤</span>
             <span class="btn-label" id="userDisplayNameMasses">Diogo Nunes</span>
@@ -268,8 +272,12 @@
           </div>
         </div>
 
-        <!-- Identificação do Usuário Logado -->
+        <!-- Ações do Usuário Logado (Instalar + Perfil) -->
         <div class="user-action">
+          <button type="button" class="btn-install-app" id="btnInstallAppHome" title="Instalar aplicativo no celular ou PC">
+            <span class="btn-icon">📲</span>
+            <span class="install-label">Instalar</span>
+          </button>
           <button class="btn-login" id="btnLoginHeader" title="Perfil do Músico">
             <span class="btn-icon">✅</span>
             <span class="btn-label" id="userDisplayName">Diogo Nunes</span>
@@ -752,6 +760,20 @@
         <div class="modal-footer">
           <p>Pastoral Litúrgica • Suporte Comunitário</p>
         </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE INSTALAÇÃO DO APP (PWA) -->
+    <div class="modal-overlay hidden" id="installGuideModal">
+      <div class="modal-card modal-install-guide">
+        <button class="btn-close-modal" id="btnCloseInstallModal">✕</button>
+        <div class="modal-header">
+          <img src="icons/icon-192.png" alt="Ícone Músicas Litúrgicas" class="install-modal-icon">
+          <h3>Instalar Músicas Litúrgicas</h3>
+          <p>Tenha o ícone oficial na sua tela inicial e acesso rápido mesmo na igreja.</p>
+        </div>
+        <div class="install-steps-list" id="installGuideSteps"></div>
+        <button type="button" class="btn-primary-block" id="btnConfirmInstallClose">Entendi</button>
       </div>
     </div>
 
