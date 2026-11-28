@@ -147,16 +147,20 @@ musicas-liturgicas-proto/
 ├── backend/
 │   └── google_apps_script_auth.gs # Servidor Apps Script v2.0 (hash SHA-256, status e reset por e-mail)
 │
-├── audios/                        # 40 arquivos MP3 reais deduplicados para ensaio
+├── audios/                        # 30 arquivos MP3 reais deduplicados para ensaio
+│
+├── icons/                         # Ícones PWA (192x192 e 512x512 maskable)
 │
 ├── css/
-│   └── styles.css                 # Estilos com Design System, temas litúrgicos (incl. Rosa Gaudete) e feedback de auth
+│   └── styles.css                 # Estilos com Design System, temas litúrgicos, mini-player e Modo Noturno no altar
 │
 ├── js/
-│   ├── app.js                     # Lógica central: autenticação v2.0 fail-closed, reprodução, transposição, editor de cifras, PDF
+│   ├── app.js                     # Auth v2.0, Media Session (tela apagada), Wake Lock, transposição, editor de cifras, PDF
 │   ├── dados_reais.js             # Catálogo homologado da Paróquia (1º Domingo do Advento 29/11 até 4º Domingo do Advento 20/12)
 │   └── dados_o_domingo.js         # Catálogo do Folheto "O Domingo" (Paulus)
 │
+├── manifest.json                  # Manifesto PWA instalável no celular (standalone)
+├── sw.js                          # Service Worker offline-safe (Cache-First p/ MP3 sem quebrar Range, Network-First p/ código)
 ├── index.html                     # Estrutura do App Shell (Login/Cadastro, Hub, Roteiro, Estúdio de Áudio e Palco)
 └── DOCUMENTACAO_E_PADROES.md      # Este documento oficial de referência
 ```
@@ -165,11 +169,7 @@ musicas-liturgicas-proto/
 
 ## 4. 🚀 Próximos Passos e Sugestões de Evolução
 
-1. **Transformação em PWA Completo (Offline)**:
-   - Adicionar `manifest.json` e `sw.js` (Service Worker) com estratégia *Cache-First* para que o músico consiga usar o app 100% offline dentro de igrejas sem sinal de internet.
-2. **Exportação / Compartilhamento de Repertório**:
-   - Gerar PDF limpo para impressão do folheto do ministério ou exportar link compartilhável via WhatsApp.
-3. **Módulo de Músicas Avulsas / Repertório Livre**:
-   - Permitir busca avulsa de cifras do acervo geral sem estar atrelado a um domingo específico.
-4. **Metrônomo Visual Silencioso**:
+1. **Módulo de Celebrações Especiais Real**:
+   - Cadastrar repertórios homologados para Casamentos, Exéquias/7º Dia, Crisma e Batismo quando solicitados pela pastoral.
+2. **Metrônomo Visual Silencioso**:
    - Indicador de pulso visual suave (piscar discreto no ritmo) para auxiliar na introdução das músicas sem produzir som.

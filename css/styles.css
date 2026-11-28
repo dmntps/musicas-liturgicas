@@ -145,6 +145,16 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition-fast);
+  white-space: nowrap;
+  max-width: 170px;
+}
+
+.btn-login .btn-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 132px;
+  display: inline-block;
 }
 
 .btn-login:hover {
@@ -906,7 +916,7 @@ body {
 
 .stage-content {
   flex: 1;
-  padding: 14px 16px 160px 16px;
+  padding: 14px 16px 132px 16px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -1240,33 +1250,34 @@ body {
   transform: translateY(-1px);
 }
 
-/* WIDGET FLUTUANTE DE ROLAGEM AUTOMÁTICA (PADRÃO HOMOLOGADO) */
+/* BARRA DE ROLAGEM AUTOMÁTICA ACOPLADA ACIMA DO RODAPÉ (ZERO SOBREPOSIÇÃO) */
 .autoscroll-widget {
   position: absolute;
-  bottom: 76px;
-  right: 14px;
-  z-index: 1050;
+  bottom: 64px;
+  left: 0;
+  right: 0;
+  z-index: 44;
   display: flex;
   align-items: center;
-  background: rgba(16, 32, 20, 0.76);
+  justify-content: space-between;
+  background: rgba(16, 32, 20, 0.94);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1.5px solid rgba(212, 160, 23, 0.7);
-  border-radius: 40px;
-  padding: 5px 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 10px rgba(198, 146, 20, 0.2);
-  gap: 6px;
+  border-top: 1.5px solid rgba(212, 160, 23, 0.72);
+  border-radius: 0;
+  padding: 6px 14px;
+  box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.16);
+  gap: 8px;
   user-select: none;
-  opacity: 0.82;
-  transition: opacity 0.2s ease, background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-  animation: fadeIn 0.2s ease;
+  opacity: 1;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .autoscroll-widget:hover,
 .autoscroll-widget:focus-within,
 .autoscroll-widget.is-scrolling {
   opacity: 1;
-  background: rgba(16, 32, 20, 0.94);
+  background: rgba(12, 26, 16, 0.98);
   border-color: var(--color-gold);
 }
 
@@ -1330,10 +1341,11 @@ body {
   text-align: center;
 }
 
-/* NOTIFICAÇÃO TOAST */
+/* NOTIFICAÇÃO TOAST (EMBAIXO, SEM COBRIR CABEÇALHO) */
 .toast-notification {
   position: fixed;
-  top: 18px;
+  bottom: 84px;
+  top: auto;
   left: 50%;
   transform: translateX(-50%);
   background: #14492c;
@@ -1345,12 +1357,15 @@ body {
   font-weight: 700;
   z-index: 2000;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
-  white-space: nowrap;
-  animation: slideDown 0.25s ease;
+  max-width: calc(100% - 32px);
+  white-space: normal;
+  text-align: center;
+  pointer-events: none;
+  animation: slideUp 0.25s ease;
 }
 
-@keyframes slideDown {
-  from { transform: translate(-50%, -20px); opacity: 0; }
+@keyframes slideUp {
+  from { transform: translate(-50%, 16px); opacity: 0; }
   to { transform: translate(-50%, 0); opacity: 1; }
 }
 
@@ -2679,22 +2694,18 @@ body {
 /* Filtro por Mês */
 .month-filter-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  overflow-x: auto;
+  overflow-x: visible;
   padding-bottom: 2px;
-  scrollbar-width: none;
-}
-
-.month-filter-tabs::-webkit-scrollbar {
-  display: none;
 }
 
 .month-tab-btn {
   background: #ffffff;
   border: 1.5px solid var(--border-light);
-  padding: 7px 14px;
+  padding: 6px 12px;
   border-radius: var(--radius-full);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 700;
   color: var(--text-secondary);
   cursor: pointer;
@@ -3824,6 +3835,254 @@ body {
   opacity: 0.65;
   cursor: wait;
   transform: none !important;
+}
+
+/* ========================================================
+   📍 SELO PRÓXIMA MISSA & TOM PERSONALIZADO NO ROTEIRO
+   ======================================================== */
+.next-upcoming-pill {
+  font-size: 0.66rem;
+  font-weight: 800;
+  color: #166534;
+  background: #dcfce7;
+  border: 1px solid rgba(22, 101, 52, 0.28);
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.badge-tone-custom {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1px solid rgba(217, 119, 6, 0.35);
+}
+
+/* ========================================================
+   🎧 MINI-PLAYER PERSISTENTE ENTRE TELAS
+   ======================================================== */
+.app-shell.has-mini-player .app-content {
+  padding-bottom: 148px;
+}
+
+.global-mini-player {
+  position: absolute;
+  bottom: 68px;
+  left: 10px;
+  right: 10px;
+  z-index: 60;
+  background: linear-gradient(135deg, #102a1b 0%, #14492c 100%);
+  color: #ffffff;
+  border: 1.5px solid rgba(212, 160, 23, 0.75);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.mini-player-info {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-align: left;
+  padding: 2px 0;
+}
+
+.mini-player-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.mini-player-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mini-player-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-player-subtitle {
+  font-size: 0.66rem;
+  color: #fde68a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-player-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.mini-ctrl-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.mini-ctrl-btn:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.mini-close-btn {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* ========================================================
+   🌙 MODO NOTURNO NO ALTAR (#stageScreen.stage-night-mode)
+   ======================================================== */
+.btn-tool-night {
+  background: #f1f5f9;
+  border: 1px solid var(--border-light);
+  color: #334155;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-tool-night.active {
+  background: #1e293b;
+  color: #fde047;
+  border-color: #fbbf24;
+}
+
+#stageScreen.stage-night-mode {
+  background: #0b1120;
+  color: #f1f5f9;
+  --chord-color: #fbbf24;
+  --chord-bg: rgba(251, 191, 36, 0.14);
+}
+
+#stageScreen.stage-night-mode .stage-header,
+#stageScreen.stage-night-mode .moments-stepper,
+#stageScreen.stage-night-mode .stage-footer {
+  background: #111827;
+  border-color: #1f2937;
+  color: #f1f5f9;
+}
+
+#stageScreen.stage-night-mode .stage-header-title h2,
+#stageScreen.stage-night-mode .stage-song-title {
+  color: #f8fafc;
+}
+
+#stageScreen.stage-night-mode .stage-subtitle,
+#stageScreen.stage-night-mode .stage-song-author,
+#stageScreen.stage-night-mode .tb-label,
+#stageScreen.stage-night-mode .editor-hint-footer {
+  color: #94a3b8;
+}
+
+#stageScreen.stage-night-mode .btn-back-stage,
+#stageScreen.stage-night-mode .btn-swap-song,
+#stageScreen.stage-night-mode .step-chip,
+#stageScreen.stage-night-mode .btn-tool,
+#stageScreen.stage-night-mode .btn-tool-link,
+#stageScreen.stage-night-mode .btn-tool-edit,
+#stageScreen.stage-night-mode .btn-tool-pdf,
+#stageScreen.stage-night-mode .btn-stage-prev {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+#stageScreen.stage-night-mode .step-chip.active {
+  background: #166534;
+  color: #ffffff;
+  border-color: #22c55e;
+}
+
+#stageScreen.stage-night-mode .stage-content {
+  background: #0b1120;
+}
+
+#stageScreen.stage-night-mode .stage-song-info,
+#stageScreen.stage-night-mode .stage-toolbar,
+#stageScreen.stage-night-mode .stage-cifra-box {
+  background: #111827;
+  border-color: #1f2937;
+  box-shadow: none;
+}
+
+#stageScreen.stage-night-mode .stage-moment-badge {
+  background: rgba(34, 197, 94, 0.16);
+  color: #86efac;
+}
+
+#stageScreen.stage-night-mode .stage-folheto-tag {
+  background: #1e293b;
+  color: #cbd5e1;
+}
+
+#stageScreen.stage-night-mode .tb-value-tone {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.14);
+}
+
+#stageScreen.stage-night-mode #stageCifraPre,
+#stageScreen.stage-night-mode .visual-lyric-text {
+  color: #f1f5f9;
+}
+
+#stageScreen.stage-night-mode .stage-editor-panel {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+#stageScreen.stage-night-mode .visual-cifra-wrap {
+  background: #0b1120;
+  color: #f1f5f9;
+}
+
+#stageScreen.stage-night-mode .editable-chord {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.16);
+  border-color: rgba(251, 191, 36, 0.55);
+}
+
+#stageScreen.stage-night-mode .editable-chord.selected {
+  background: #fbbf24 !important;
+  color: #0f172a !important;
+  border-color: #fbbf24 !important;
+}
+
+#stageScreen.stage-night-mode .cifra-editor-textarea {
+  background: #0b1120;
+  color: #f1f5f9;
+  border-color: #fbbf24;
 }
 
 

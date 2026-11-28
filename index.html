@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Músicas Litúrgicas</title>
+  <meta name="theme-color" content="#1b5e20">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Liturgia">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="css/styles.css">
   <!-- Google Fonts: Inter para interface moderna e JetBrains Mono para cifras alinhadas -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -327,30 +335,6 @@
           </div>
         </section>
 
-        <!-- Modo de Escolha: Liturgia do Domingo vs Celebrações Especiais -->
-        <section class="mode-navigation">
-          <div class="tab-pills" role="tablist">
-            <button class="tab-pill active" id="tabLiturgia" role="tab" aria-selected="true">
-              <span class="tab-icon">⛪</span> Roteiro do Domingo
-            </button>
-            <button class="tab-pill" id="tabEspeciais" role="tab" aria-selected="false">
-              <span class="tab-icon">✨</span> Celebrações Especiais
-            </button>
-          </div>
-        </section>
-
-        <!-- Sub-filtro para Celebrações Especiais -->
-        <section class="special-occasions-bar hidden" id="specialOccasionsBar">
-          <span class="occasions-title">Escolha o Rito ou Celebração:</span>
-          <div class="occasions-scroll">
-            <button class="occasion-chip active" data-occasion="casamento">💍 Casamento</button>
-            <button class="occasion-chip" data-occasion="setimo-dia">🕊️ 7º Dia / Exéquias</button>
-            <button class="occasion-chip" data-occasion="aniversario">🎂 Ação de Graças / Aniv.</button>
-            <button class="occasion-chip" data-occasion="crisma">🔥 Crisma / Batismo</button>
-            <button class="occasion-chip" data-occasion="livre">🎸 Repertório Livre</button>
-          </div>
-        </section>
-
         <!-- Lista de Partes da Celebração e Músicas -->
         <section class="songs-section" id="songsContainer">
           <!-- Gerado dinamicamente -->
@@ -606,6 +590,9 @@
             <button type="button" class="btn-tool-pdf" id="btnExportPdfStage" title="Exportar repertório completo em PDF">
               <span>📄 PDF</span>
             </button>
+            <button type="button" class="btn-tool-night" id="btnStageNightMode" title="Alternar modo noturno para o altar">
+              <span id="stageNightIcon">🌙</span>
+            </button>
           </div>
         </div>
 
@@ -641,9 +628,6 @@
           <span id="nextButtonLabel">Próximo Momento</span> <span>▶</span>
         </button>
       </footer>
-
-      <!-- TOAST DE NOTIFICAÇÃO SUAVE -->
-      <div id="appToast" class="toast-notification hidden"></div>
     </div>
 
     <!-- MODAL (MODELO B): SELETOR DE MISSAS PLANEJADAS POR DATA -->
@@ -771,8 +755,27 @@
       </div>
     </div>
 
+    <!-- MINI-PLAYER PERSISTENTE ENTRE TELAS -->
+    <div id="globalMiniPlayer" class="global-mini-player hidden">
+      <button type="button" class="mini-player-info" id="miniPlayerOpenAudio" title="Abrir console de áudio">
+        <span class="mini-player-icon">🎧</span>
+        <div class="mini-player-text">
+          <span class="mini-player-title" id="miniPlayerTitle">Por ele esperem!</span>
+          <span class="mini-player-subtitle" id="miniPlayerSubtitle">1. Refrão Orante Inicial</span>
+        </div>
+      </button>
+      <div class="mini-player-controls">
+        <button type="button" class="mini-ctrl-btn" id="btnMiniPlayPause" title="Tocar ou Pausar">⏸</button>
+        <button type="button" class="mini-ctrl-btn" id="btnMiniNext" title="Próxima faixa">⏭</button>
+        <button type="button" class="mini-ctrl-btn mini-close-btn" id="btnMiniClose" title="Fechar player">✕</button>
+      </div>
+    </div>
+
+    <!-- TOAST GLOBAL DE NOTIFICAÇÃO -->
+    <div id="appToast" class="toast-notification hidden"></div>
+
     <!-- Player de Áudio HTML5 Nativo para tocar os MP3s reais -->
-    <audio id="realAudioElement" preload="auto"></audio>
+    <audio id="realAudioElement" preload="auto" playsinline></audio>
   </div>
 
   <!-- Dados homologados reais das celebrações -->

@@ -1,0 +1,26 @@
+{
+  "name": "Músicas Litúrgicas",
+  "short_name": "Liturgia",
+  "description": "Repertórios, áudios de ensaio e cifras litúrgicas — Comunidade Virgem da Piedade",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1b5e20",
+  "background_color": "#f4f6f8",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

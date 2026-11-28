@@ -511,6 +511,8 @@ const appState = {
   stageTranspositions: {},
   stageCapos: {},
   stageFontSize: 14,
+  stageNightMode: false,
+  wakeLock: null,
   autoScrollActive: false,
   autoScrollSpeedLevel: 2, // 1 a 5 (padrão Vel 2)
   autoScrollAnimFrame: null,
@@ -520,12 +522,15 @@ const appState = {
   // Player de Áudio de Ensaio e Estúdio
   isPlayingAudio: false,
   audioCurrentTime: 0,
-  audioDuration: 36,
+  audioDuration: 0,
   audioPlaybackRate: 1.0,
   audioInterval: null,
   audioCtx: null,
   currentAudioTrackIndex: 0,
   audioAutoPlaySequence: true,
+  audioOwner: "audio",
+  audioPlayingDateKey: null,
+  hasActiveAudioSession: false,
 
   // Modal Avulso
   activeSongModal: null,
@@ -535,12 +540,22 @@ const appState = {
 
 // Elementos do DOM
 const dom = {
+  appShell: document.querySelector(".app-shell"),
   // Telas
   authScreen: document.getElementById("authScreen"),
   massesScreen: document.getElementById("massesScreen"),
   homeScreen: document.getElementById("homeScreen"),
   audioScreen: document.getElementById("audioScreen"),
   stageScreen: document.getElementById("stageScreen"),
+
+  // Mini-Player Persistente Global
+  globalMiniPlayer: document.getElementById("globalMiniPlayer"),
+  miniPlayerOpenAudio: document.getElementById("miniPlayerOpenAudio"),
+  miniPlayerTitle: document.getElementById("miniPlayerTitle"),
+  miniPlayerSubtitle: document.getElementById("miniPlayerSubtitle"),
+  btnMiniPlayPause: document.getElementById("btnMiniPlayPause"),
+  btnMiniNext: document.getElementById("btnMiniNext"),
+  btnMiniClose: document.getElementById("btnMiniClose"),
 
   // Elementos do Hub de Missas (Tela 1 Pós-Login)
   userDisplayNameMasses: document.getElementById("userDisplayNameMasses"),
@@ -657,6 +672,8 @@ const dom = {
   btnCapoDown: document.getElementById("btnCapoDown"),
   btnStageFontUp: document.getElementById("btnStageFontUp"),
   btnStageFontDown: document.getElementById("btnStageFontDown"),
+  btnStageNightMode: document.getElementById("btnStageNightMode"),
+  stageNightIcon: document.getElementById("stageNightIcon"),
   btnToggleChordEditor: document.getElementById("btnToggleChordEditor"),
   stageEditedBadge: document.getElementById("stageEditedBadge"),
   stageEditorPanel: document.getElementById("stageEditorPanel"),
@@ -730,10 +747,6 @@ const dom = {
 
   // Home controls
   songsContainer: document.getElementById("songsContainer"),
-  tabLiturgia: document.getElementById("tabLiturgia"),
-  tabEspeciais: document.getElementById("tabEspeciais"),
-  specialOccasionsBar: document.getElementById("specialOccasionsBar"),
-  occasionChips: document.querySelectorAll(".occasion-chip"),
   searchInput: document.getElementById("searchInput"),
   btnClearSearch: document.getElementById("btnClearSearch"),
   btnLoginHeader: document.getElementById("btnLoginHeader"),
@@ -771,6 +784,44 @@ function getActiveCatalog() {
   return (typeof missasReais !== 'undefined' && missasReais) ? missasReais : missasPlanejadas;
 }
 
+function formatShortUserName(fullName) {
+  const clean = String(fullName || "").trim();
+  if (!clean) return "Músico";
+  const parts = clean.split(/\s+/);
+  if (parts.length >= 3) {
+    return `${parts[0]} ${parts[parts.length - 1]}`;
+  }
+  return clean;
+}
+
+function getNextUpcomingMassKey(catalog = getActiveCatalog()) {
+  const keys = Object.keys(catalog || {}).sort();
+  if (keys.length === 0) return "2026-11-29";
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  const todayKey = `${y}-${m}-${d}`;
+  return keys.find(k => k >= todayKey) || keys[keys.length - 1];
+}
+
+function getHomologatedAlternativesForSong(song) {
+  if (!song || typeof cantosAlternativosHomologados === "undefined" || !cantosAlternativosHomologados) {
+    return [];
+  }
+  const momentLower = String(song.moment || "").toLowerCase();
+  if (cantosAlternativosHomologados[song.moment]) {
+    return cantosAlternativosHomologados[song.moment];
+  }
+  if (momentLower.includes("louvor")) {
+    return cantosAlternativosHomologados["Hino de Louvor"] || [];
+  }
+  if (momentLower.startsWith("santo") || momentLower.includes("eucarística")) {
+    return cantosAlternativosHomologados["Santo / Aclamação Eucarística"] || [];
+  }
+  return [];
+}
+
 function switchActiveFolheto(folhetoId) {
   appState.activeFolheto = folhetoId;
   localStorage.setItem("liturgia_boletim_padrao", folhetoId);
@@ -778,10 +829,9 @@ function switchActiveFolheto(folhetoId) {
   if (dom.defaultBulletinSelect) dom.defaultBulletinSelect.value = folhetoId;
 
   const catalog = getActiveCatalog();
-  const availableDates = Object.keys(catalog);
   let targetDate = appState.activeDateKey;
   if (!catalog[targetDate]) {
-    targetDate = availableDates[0] || "2026-11-29";
+    targetDate = getNextUpcomingMassKey(catalog);
   }
 
   selectMassDate(targetDate);
@@ -1214,8 +1264,8 @@ function hideAllScreens() {
 // TELA 1: HUB DE SELEÇÃO DE MISSAS (TELA PRINCIPAL PÓS-LOGIN)
 // ========================================================
 function openMassesScreen() {
-  stopRehearsalAudio();
   stopAutoScroll();
+  releaseStageWakeLock();
   hideAllScreens();
   if (dom.massesScreen) dom.massesScreen.classList.remove("hidden");
   appState.currentScreen = "masses";
@@ -1224,27 +1274,54 @@ function openMassesScreen() {
   const currentMonth = activeTab ? activeTab.dataset.month : "todos";
   const query = dom.massSearchInput ? dom.massSearchInput.value : "";
   renderMassesHub(currentMonth, query);
+  updateGlobalMiniPlayer();
 }
 
 function openHomeScreenForMass(dateKey) {
-  stopRehearsalAudio();
   stopAutoScroll();
+  releaseStageWakeLock();
   if (dateKey) selectMassDate(dateKey);
   hideAllScreens();
   if (dom.homeScreen) dom.homeScreen.classList.remove("hidden");
   appState.currentScreen = "home";
+  updateGlobalMiniPlayer();
 }
 
-function openAudioScreen(trackIndex = 0, autoStart = false) {
+function openAudioScreen(trackIndex = null, autoStart = false) {
   stopAutoScroll();
+  releaseStageWakeLock();
+
+  const isAlreadyPlayingThisSession = appState.hasActiveAudioSession
+    && appState.audioPlayingDateKey === appState.activeDateKey
+    && appState.audioOwner === "audio";
+
   if (typeof trackIndex === "number" && trackIndex >= 0) {
+    const isSameTrack = trackIndex === appState.currentAudioTrackIndex;
     appState.currentAudioTrackIndex = trackIndex;
+    hideAllScreens();
+    if (dom.audioScreen) dom.audioScreen.classList.remove("hidden");
+    appState.currentScreen = "audio";
+    updateGlobalMiniPlayer();
+
+    if (isAlreadyPlayingThisSession && isSameTrack && !autoStart) {
+      // Apenas retorna para o console mantendo a reprodução atual contínua
+      loadAudioStudioTrack(trackIndex, false, { keepCurrentPlayback: true });
+    } else {
+      loadAudioStudioTrack(trackIndex, autoStart);
+    }
+    return;
   }
+
   hideAllScreens();
   if (dom.audioScreen) dom.audioScreen.classList.remove("hidden");
   appState.currentScreen = "audio";
+  updateGlobalMiniPlayer();
 
-  loadAudioStudioTrack(appState.currentAudioTrackIndex, autoStart);
+  if (isAlreadyPlayingThisSession) {
+    loadAudioStudioTrack(appState.currentAudioTrackIndex, false, { keepCurrentPlayback: true });
+  } else {
+    loadAudioStudioTrack(appState.currentAudioTrackIndex, autoStart);
+  }
 }
 
 function renderMassesHub(monthFilter = "todos", searchQuery = "") {
@@ -1293,6 +1370,7 @@ function renderMassesHub(monthFilter = "todos", searchQuery = "") {
   if (!dom.massesCardFeed) return;
   dom.massesCardFeed.innerHTML = "";
 
+  const nextUpcomingKey = getNextUpcomingMassKey(catalog);
   const query = searchQuery.trim().toLowerCase();
 
   dateKeys.forEach(dateKey => {
@@ -1342,6 +1420,10 @@ function renderMassesHub(monthFilter = "todos", searchQuery = "") {
     else if (isRose) pillBadgeHtml = '<span class="rose-pill">🌸 Gaudete</span>';
     else if (isPurple) pillBadgeHtml = '<span class="purple-pill">🕯️ Advento</span>';
 
+    const upcomingBadgeHtml = dateKey === nextUpcomingKey
+      ? '<span class="next-upcoming-pill">📍 Próxima</span>'
+      : '';
+
     const card = document.createElement("div");
     card.className = `mass-hub-card ${isSelected ? "active" : ""} ${cardThemeClass}`;
     card.innerHTML = `
@@ -1352,6 +1434,7 @@ function renderMassesHub(monthFilter = "todos", searchQuery = "") {
             <span class="mass-hub-date-badge">📅 ${mass.shortDate}</span>
             <span class="mass-hub-meta">• ${mass.ano}</span>
             ${pillBadgeHtml}
+            ${upcomingBadgeHtml}
           </div>
           <h4 class="mass-hub-title">${mass.title}</h4>
           <p class="mass-hub-salmo">${mass.salmo}</p>
@@ -1464,7 +1547,7 @@ function setupMassesEvents() {
     dom.navHomeTabFromMasses.addEventListener("click", () => openHomeScreenForMass(appState.activeDateKey || "2026-11-29"));
   }
   if (dom.navAudioTabFromMasses) {
-    dom.navAudioTabFromMasses.addEventListener("click", () => openAudioScreen(0, false));
+    dom.navAudioTabFromMasses.addEventListener("click", () => openAudioScreen(null, false));
   }
   if (dom.navStageTabFromMasses) {
     dom.navStageTabFromMasses.addEventListener("click", () => {
@@ -1518,15 +1601,23 @@ function extractCleanLyrics(cifraText) {
     .trim();
 }
 
-function loadAudioStudioTrack(index, autoPlay = false) {
+function loadAudioStudioTrack(index, autoPlay = false, options = {}) {
   if (!appState.activeMissa || appState.activeMissa.length === 0) return;
   const validIndex = Math.max(0, Math.min(index, appState.activeMissa.length - 1));
   appState.currentAudioTrackIndex = validIndex;
   appState.currentStageIndex = validIndex;
+  appState.audioOwner = "audio";
 
-  stopRehearsalAudio();
-  appState.audioCurrentTime = 0;
-  appState.audioDuration = 36;
+  const keepCurrentPlayback = Boolean(options.keepCurrentPlayback);
+  const seamless = Boolean(options.seamless);
+
+  if (!keepCurrentPlayback) {
+    if (!seamless) {
+      stopRehearsalAudio();
+    }
+    appState.audioCurrentTime = 0;
+    appState.audioDuration = 0;
+  }
 
   const song = appState.activeMissa[validIndex];
   if (!song) return;
@@ -1537,14 +1628,23 @@ function loadAudioStudioTrack(index, autoPlay = false) {
   if (dom.deckSongMeta) dom.deckSongMeta.innerText = `${song.author} • Tom Original: ${song.tone}${rhythmPart}`;
   if (dom.deckLyricsText) dom.deckLyricsText.innerText = extractCleanLyrics(song.cifra);
   if (dom.deckStatusBadge) {
-    dom.deckStatusBadge.innerText = autoPlay ? "🔊 Reproduzindo Agora" : "🔊 Pronto para Ouvir";
+    const activePlay = autoPlay || (keepCurrentPlayback && appState.isPlayingAudio);
+    dom.deckStatusBadge.innerText = activePlay ? "🔊 Tocando MP3 Oficial" : "🔊 Pronto para Ouvir";
+  }
+
+  // Pré-carregar metadados reais da faixa sem bloquear a troca contínua em segundo plano
+  if (!keepCurrentPlayback && !autoPlay && song.audioFile && dom.realAudioElement) {
+    if (!dom.realAudioElement.src || !dom.realAudioElement.src.includes(song.audioFile)) {
+      dom.realAudioElement.src = song.audioFile;
+    }
   }
 
   updateAudioDisplay();
   renderAudioTracksList();
+  updateGlobalMiniPlayer();
 
   if (autoPlay) {
-    startRehearsalAudio();
+    startRehearsalAudio({ forceReloadSrc: true, resetTime: true });
   }
 }
 
@@ -1611,14 +1711,14 @@ function setupAudioStudioEvents() {
   if (dom.btnDeckPrev) {
     dom.btnDeckPrev.addEventListener("click", () => {
       const prevIdx = appState.currentAudioTrackIndex > 0 ? appState.currentAudioTrackIndex - 1 : appState.activeMissa.length - 1;
-      loadAudioStudioTrack(prevIdx, appState.isPlayingAudio);
+      loadAudioStudioTrack(prevIdx, appState.isPlayingAudio, { seamless: appState.isPlayingAudio });
     });
   }
 
   if (dom.btnDeckNext) {
     dom.btnDeckNext.addEventListener("click", () => {
       const nextIdx = (appState.currentAudioTrackIndex + 1) % appState.activeMissa.length;
-      loadAudioStudioTrack(nextIdx, appState.isPlayingAudio);
+      loadAudioStudioTrack(nextIdx, appState.isPlayingAudio, { seamless: appState.isPlayingAudio });
     });
   }
 
@@ -1791,15 +1891,18 @@ function loginSuccess(user) {
   appState.currentUser = normalizedUser;
   localStorage.setItem("liturgia_user_session", JSON.stringify(normalizedUser));
 
+  const shortDisplayName = formatShortUserName(normalizedUser.name);
   if (dom.userDisplayName) {
-    dom.userDisplayName.innerText = `${normalizedUser.name}`;
+    dom.userDisplayName.innerText = shortDisplayName;
+    if (dom.btnLoginHeader) dom.btnLoginHeader.title = normalizedUser.name || "Perfil do Músico";
   }
   if (dom.userDisplayNameMasses) {
-    dom.userDisplayNameMasses.innerText = `${normalizedUser.name}`;
+    dom.userDisplayNameMasses.innerText = shortDisplayName;
+    if (dom.btnUserMassesHeader) dom.btnUserMassesHeader.title = normalizedUser.name || "Perfil do Músico";
   }
 
   openMassesScreen();
-  showToast(`✝ Bem-vindo, ${normalizedUser.name}! Escolha a missa.`);
+  showToast(`✝ Bem-vindo, ${shortDisplayName}! Escolha a missa.`);
 }
 
 function logoutUser(reasonMessage = "") {
@@ -1808,7 +1911,11 @@ function logoutUser(reasonMessage = "") {
   localStorage.removeItem("liturgia_user_session");
 
   stopRehearsalAudio();
+  appState.hasActiveAudioSession = false;
+  appState.audioPlayingDateKey = null;
   stopAutoScroll();
+  releaseStageWakeLock();
+  updateGlobalMiniPlayer();
   hideAllScreens();
   if (dom.authScreen) dom.authScreen.classList.remove("hidden");
   appState.currentScreen = "auth";
@@ -1822,11 +1929,72 @@ function logoutUser(reasonMessage = "") {
   }
 }
 
+// ========================================================
+// MODO NOTURNO, WAKE LOCK & PREFERÊNCIAS DE PALCO
+// ========================================================
+function applyStageNightMode(enabled) {
+  appState.stageNightMode = Boolean(enabled);
+  try {
+    localStorage.setItem("liturgia_stage_night_mode", appState.stageNightMode ? "1" : "0");
+  } catch (e) {}
+
+  if (dom.stageScreen) {
+    dom.stageScreen.classList.toggle("stage-night-mode", appState.stageNightMode);
+  }
+  if (dom.btnStageNightMode) {
+    dom.btnStageNightMode.classList.toggle("active", appState.stageNightMode);
+  }
+  if (dom.stageNightIcon) {
+    dom.stageNightIcon.innerText = appState.stageNightMode ? "☀️" : "🌙";
+  }
+}
+
+async function requestStageWakeLock() {
+  if (!("wakeLock" in navigator) || appState.wakeLock) return;
+  try {
+    appState.wakeLock = await navigator.wakeLock.request("screen");
+    appState.wakeLock.addEventListener("release", () => {
+      appState.wakeLock = null;
+    });
+  } catch (e) {
+    // Dispositivo ou modo de economia recusou wakeLock — ignora com segurança
+  }
+}
+
+async function releaseStageWakeLock() {
+  if (!appState.wakeLock) return;
+  try {
+    await appState.wakeLock.release();
+  } catch (e) {}
+  appState.wakeLock = null;
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && appState.currentScreen === "stage") {
+    requestStageWakeLock();
+  }
+});
+
 // Inicialização da Aplicação
 function initApp() {
   // Remove qualquer rastro antigo de senhas em texto puro no localStorage
   localStorage.removeItem("liturgia_registered_users");
 
+  // Restaurar preferências locais de Palco (fonte, velocidade da rolagem, modo noturno)
+  const savedFont = parseInt(localStorage.getItem("liturgia_stage_font_size") || "", 10);
+  if (!isNaN(savedFont) && savedFont >= 10 && savedFont <= 26) {
+    appState.stageFontSize = savedFont;
+  }
+  const savedSpeed = parseInt(localStorage.getItem("liturgia_autoscroll_speed") || "", 10);
+  if (!isNaN(savedSpeed) && savedSpeed >= 1 && savedSpeed <= 5) {
+    appState.autoScrollSpeedLevel = savedSpeed;
+  }
+  const savedNight = localStorage.getItem("liturgia_stage_night_mode") === "1";
+  applyStageNightMode(savedNight);
+
+  setupRealAudioElementEvents();
+  initMediaSessionHandlers();
+  setupGlobalMiniPlayerEvents();
   setupAuthEvents();
   setupMassesEvents();
   setupHomeEvents();
@@ -1835,11 +2003,10 @@ function initApp() {
   loadSavedBulletin();
 
   const catalog = getActiveCatalog();
-  const dates = Object.keys(catalog);
   const savedDate = localStorage.getItem("liturgia_selected_mass_date");
   const initialDate = (savedDate && catalog[savedDate])
     ? savedDate
-    : (catalog["2026-11-29"] ? "2026-11-29" : (dates[0] || "2026-11-29"));
+    : getNextUpcomingMassKey(catalog);
   const initialTheme = catalog[initialDate] ? catalog[initialDate].bannerTheme : "";
   const loginTheme = initialTheme === "gold" || initialTheme === "mariano"
     ? "Branco"
@@ -1903,6 +2070,13 @@ function selectMassDate(dateKey) {
   const catalog = getActiveCatalog();
   const selectedMass = catalog[dateKey];
   if (!selectedMass) return;
+
+  if (appState.hasActiveAudioSession && appState.audioPlayingDateKey && appState.audioPlayingDateKey !== dateKey) {
+    stopRehearsalAudio();
+    appState.hasActiveAudioSession = false;
+    appState.audioPlayingDateKey = null;
+    updateGlobalMiniPlayer();
+  }
 
   appState.activeDateKey = dateKey;
   localStorage.setItem("liturgia_selected_mass_date", dateKey);
@@ -1993,10 +2167,10 @@ function setupHomeEvents() {
 
   // Atalhos para Ouvir Áudios da Missa
   if (dom.btnHomeOpenAudio) {
-    dom.btnHomeOpenAudio.addEventListener("click", () => openAudioScreen(0, false));
+    dom.btnHomeOpenAudio.addEventListener("click", () => openAudioScreen(null, false));
   }
   if (dom.navOpenAudioFromHome) {
-    dom.navOpenAudioFromHome.addEventListener("click", () => openAudioScreen(0, false));
+    dom.navOpenAudioFromHome.addEventListener("click", () => openAudioScreen(null, false));
   }
 
   // Abertura do Modo Cifras & Execução da Missa
@@ -2035,8 +2209,8 @@ function setupHomeEvents() {
   // Voltar do Modo Cifras para a tela de origem (Missas, Áudio ou Roteiro)
   if (dom.btnBackFromStage) {
     dom.btnBackFromStage.addEventListener("click", () => {
-      stopRehearsalAudio();
       stopAutoScroll();
+      releaseStageWakeLock();
 
       if (appState.stageOriginScreen === "masses") {
         openMassesScreen();
@@ -2080,6 +2254,31 @@ function renderHomeSongs(query = "") {
       if (!match) return;
     }
 
+    if (appState.stageTranspositions[song.id] === undefined) {
+      const savedT = localStorage.getItem(getToneStorageKey(song.id));
+      appState.stageTranspositions[song.id] = (savedT !== null) ? parseInt(savedT, 10) : 0;
+    }
+    if (appState.stageCapos[song.id] === undefined) {
+      const savedC = localStorage.getItem(getCapoStorageKey(song.id));
+      appState.stageCapos[song.id] = (savedC !== null) ? parseInt(savedC, 10) : 0;
+    }
+
+    const trans = appState.stageTranspositions[song.id] || 0;
+    const capo = appState.stageCapos[song.id] || 0;
+    const effectiveTone = transposeChord(song.tone, trans);
+    const hasCustomTone = trans !== 0 || capo > 0;
+    let toneBadgeText = `Tom: ${effectiveTone}`;
+    if (capo > 0) {
+      toneBadgeText = `Tom: ${effectiveTone} • Capo ${capo}ª`;
+    } else if (trans !== 0) {
+      toneBadgeText = `Tom: ${effectiveTone} (orig. ${song.tone})`;
+    }
+    const toneBadgeClass = hasCustomTone ? "badge-tone badge-tone-custom" : "badge-tone";
+    const hasSwapOptions = getHomologatedAlternativesForSong(song).length >= 2;
+    const swapBtnHtml = hasSwapOptions
+      ? `<button type="button" class="btn-song-swap-inline" data-swap-idx="${index}" title="Substituir música deste momento">⇄ Trocar</button>`
+      : "";
+
     const card = document.createElement("div");
     card.className = "song-card";
     const rhythmBadge = song.rhythm ? ` • Ritmo: ${song.rhythm}` : "";
@@ -2090,13 +2289,13 @@ function renderHomeSongs(query = "") {
       <div class="song-main-info">
         <h4 class="song-title">${index + 1}. ${song.moment}: ${song.title}</h4>
         <div class="song-meta">
-          <span class="badge-tone">Tom: ${song.tone}</span>
+          <span class="${toneBadgeClass}">${toneBadgeText}</span>
           ${editedBadgeHtml}
           <span>${song.author}${rhythmBadge}</span>
         </div>
       </div>
       <div class="song-card-actions">
-        <button type="button" class="btn-song-swap-inline" data-swap-idx="${index}" title="Substituir música deste momento">⇄ Trocar</button>
+        ${swapBtnHtml}
         <button type="button" class="btn-song-audio-inline" data-audio-idx="${index}" title="Ouvir áudio desta música">🎧</button>
         <button type="button" class="btn-open-cifra" data-stage-idx="${index}">🎼 Cifra</button>
       </div>
@@ -2139,6 +2338,7 @@ function setupStageEvents() {
     localStorage.removeItem(getToneStorageKey(currentSong.id));
     localStorage.removeItem(getCapoStorageKey(currentSong.id));
     renderCurrentStageSong();
+    renderHomeSongs();
     showToast(`Tom e Capo de ${currentSong.moment} restaurados para o original (${currentSong.tone})`);
   });
 
@@ -2173,10 +2373,11 @@ function setupStageEvents() {
     });
   }
 
-  // Tamanho de Fonte
+  // Tamanho de Fonte (persistido no dispositivo)
   dom.btnStageFontUp.addEventListener("click", () => {
     if (appState.stageFontSize < 26) {
       appState.stageFontSize += 2;
+      try { localStorage.setItem("liturgia_stage_font_size", appState.stageFontSize); } catch (e) {}
       dom.stageCifraPre.style.fontSize = `${appState.stageFontSize}px`;
       const visualWrap = document.getElementById("stageVisualWrap");
       if (visualWrap) visualWrap.style.fontSize = `${appState.stageFontSize}px`;
@@ -2188,6 +2389,7 @@ function setupStageEvents() {
   dom.btnStageFontDown.addEventListener("click", () => {
     if (appState.stageFontSize > 10) {
       appState.stageFontSize -= 2;
+      try { localStorage.setItem("liturgia_stage_font_size", appState.stageFontSize); } catch (e) {}
       dom.stageCifraPre.style.fontSize = `${appState.stageFontSize}px`;
       const visualWrap = document.getElementById("stageVisualWrap");
       if (visualWrap) visualWrap.style.fontSize = `${appState.stageFontSize}px`;
@@ -2195,6 +2397,14 @@ function setupStageEvents() {
       if (taEl) taEl.style.fontSize = `${appState.stageFontSize}px`;
     }
   });
+
+  // Modo Noturno no Altar
+  if (dom.btnStageNightMode) {
+    dom.btnStageNightMode.addEventListener("click", () => {
+      applyStageNightMode(!appState.stageNightMode);
+      showToast(appState.stageNightMode ? "🌙 Modo noturno ativado para o altar." : "☀️ Modo claro restaurado.");
+    });
+  }
 
   // Rolagem Automática Flutuante (Auto-Scroll)
   if (dom.autoscrollToggleBtn) {
@@ -2248,10 +2458,22 @@ function setupStageEvents() {
 
 // Abrir o Modo Cifras & Execução no índice indicado
 function openStageMode(songIndex, originScreen = null) {
-  stopRehearsalAudio();
   stopAutoScroll();
   if (typeof closeStageSongEditor === "function") {
     closeStageSongEditor();
+  }
+
+  const targetSong = appState.activeMissa[songIndex];
+  const sameAudioPlaying = appState.hasActiveAudioSession
+    && appState.audioPlayingDateKey === appState.activeDateKey
+    && targetSong
+    && targetSong.audioFile
+    && dom.realAudioElement
+    && dom.realAudioElement.src
+    && dom.realAudioElement.src.includes(targetSong.audioFile);
+
+  if (!sameAudioPlaying) {
+    stopRehearsalAudio();
   }
 
   if (originScreen) {
@@ -2268,6 +2490,8 @@ function openStageMode(songIndex, originScreen = null) {
   // Esconder categoricamente todas as outras telas para garantir 100% de tela cheia no celular
   hideAllScreens();
   if (dom.stageScreen) dom.stageScreen.classList.remove("hidden");
+  updateGlobalMiniPlayer();
+  requestStageWakeLock();
 
   // Ajustar o botão de voltar do header do palco
   if (dom.btnBackFromStage) {
@@ -2344,6 +2568,7 @@ function saveCurrentStageTone() {
 
   localStorage.setItem(getToneStorageKey(song.id), transposition);
   localStorage.setItem(getCapoStorageKey(song.id), capo);
+  renderHomeSongs();
 
   const currentTone = transposeChord(song.tone, transposition);
   if (capo > 0) {
@@ -2364,6 +2589,7 @@ function changeStageCapo(delta) {
   appState.stageCapos[currentSong.id] = newCapo;
   localStorage.setItem(getCapoStorageKey(currentSong.id), newCapo);
   renderCurrentStageSong();
+  renderHomeSongs();
 
   if (newCapo > 0) {
     showToast(`🎸 Capotraste na ${newCapo}ª casa ativado!`);
@@ -2398,6 +2624,9 @@ function renderCurrentStageSong() {
   dom.stageMomentBadge.innerText = `${song.step}. ${cleanMomentLabel}`;
   dom.stageFolhetoTag.innerText = song.folhetoLabel || "Igreja em Oração";
   dom.stageSongTitle.innerText = song.title;
+  if (dom.btnSwapSongTrigger) {
+    dom.btnSwapSongTrigger.classList.toggle("hidden", getHomologatedAlternativesForSong(song).length < 2);
+  }
   if (dom.stageEditedBadge) {
     dom.stageEditedBadge.classList.toggle("hidden", !isStageSongCustomized(song));
   }
@@ -2487,11 +2716,16 @@ function renderCurrentStageSong() {
     }
     if (dom.rehearsalAudioPlayer) dom.rehearsalAudioPlayer.classList.remove("hidden");
 
-    // Limpar áudio anterior para não vazar se a música atual não tiver MP3
+    // Manter áudio contínuo se já estiver tocando exatamente esta faixa; caso contrário preparar para a nova faixa
+    const isSameLoadedAudio = song.audioFile
+      && dom.realAudioElement
+      && dom.realAudioElement.src
+      && dom.realAudioElement.src.includes(song.audioFile);
+
     if (dom.realAudioElement) {
-      try { dom.realAudioElement.pause(); } catch(e){}
-      if (!song.audioFile) {
-        dom.realAudioElement.src = "";
+      if (!isSameLoadedAudio) {
+        try { dom.realAudioElement.pause(); } catch(e){}
+        dom.realAudioElement.src = song.audioFile || "";
       }
     }
 
@@ -2505,8 +2739,15 @@ function renderCurrentStageSong() {
     }
 
     // Atualizar Player de Áudio para a música atual
-    appState.audioDuration = song.duration || 36;
-    appState.audioCurrentTime = 0;
+    if (isSameLoadedAudio && appState.hasActiveAudioSession) {
+      appState.audioCurrentTime = dom.realAudioElement.currentTime || 0;
+      appState.audioDuration = (dom.realAudioElement.duration && !isNaN(dom.realAudioElement.duration))
+        ? dom.realAudioElement.duration
+        : (appState.audioDuration || 0);
+    } else {
+      appState.audioDuration = 0;
+      appState.audioCurrentTime = 0;
+    }
     updateAudioDisplay();
   }
 
@@ -2533,6 +2774,7 @@ function transposeStageSong(semitones) {
   localStorage.setItem(getToneStorageKey(currentSong.id), newVal);
   
   renderCurrentStageSong();
+  renderHomeSongs();
 }
 
 // ========================================================
@@ -2551,6 +2793,7 @@ function changeScrollSpeed(delta) {
   if (newLevel < 1) newLevel = 1;
   if (newLevel > 5) newLevel = 5;
   appState.autoScrollSpeedLevel = newLevel;
+  try { localStorage.setItem("liturgia_autoscroll_speed", newLevel); } catch (e) {}
   updateScrollSpeedUI();
 }
 
@@ -2646,8 +2889,255 @@ function stopAutoScroll() {
 }
 
 // ========================================================
-// PLAYER DE ÁUDIO DE ENSAIO (MP3 REAL + FALLBACK SINTETIZADOR)
+// PLAYER DE ÁUDIO DE ENSAIO (MP3 REAL + MEDIA SESSION + MINI-PLAYER)
 // ========================================================
+let lastMediaPositionUpdateTs = 0;
+
+function getCurrentAudioTrackIndex() {
+  return appState.audioOwner === "stage"
+    ? appState.currentStageIndex
+    : appState.currentAudioTrackIndex;
+}
+
+function getCurrentAudioSong() {
+  if (!appState.activeMissa || appState.activeMissa.length === 0) return null;
+  const idx = getCurrentAudioTrackIndex();
+  return appState.activeMissa[idx] || appState.activeMissa[0] || null;
+}
+
+function updateMediaSession(song) {
+  if (!("mediaSession" in navigator) || !song) return;
+  try {
+    const catalog = getActiveCatalog();
+    const mass = catalog[appState.activeDateKey];
+    const massLabel = mass ? mass.title.split("—")[0].trim() : "Músicas Litúrgicas";
+    const icon192 = new URL("icons/icon-192.png", window.location.href).href;
+    const icon512 = new URL("icons/icon-512.png", window.location.href).href;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: song.title || "Canto Litúrgico",
+      artist: song.author || "Comunidade Virgem da Piedade",
+      album: `${massLabel} • ${song.moment || "Liturgia"}`,
+      artwork: [
+        { src: icon192, sizes: "192x192", type: "image/png" },
+        { src: icon512, sizes: "512x512", type: "image/png" }
+      ]
+    });
+  } catch (e) {}
+}
+
+function updateMediaSessionPositionState() {
+  if (!("mediaSession" in navigator) || typeof navigator.mediaSession.setPositionState !== "function") return;
+  const audioEl = dom.realAudioElement;
+  if (!audioEl || !audioEl.duration || isNaN(audioEl.duration) || !isFinite(audioEl.duration) || audioEl.duration <= 0) return;
+  try {
+    navigator.mediaSession.setPositionState({
+      duration: audioEl.duration,
+      playbackRate: audioEl.playbackRate || 1.0,
+      position: Math.max(0, Math.min(audioEl.currentTime || 0, audioEl.duration))
+    });
+  } catch (e) {}
+}
+
+function initMediaSessionHandlers() {
+  if (!("mediaSession" in navigator)) return;
+  const actions = {
+    play: () => startRehearsalAudio({ keepOwner: true }),
+    pause: () => stopRehearsalAudio(),
+    previoustrack: () => {
+      if (!appState.activeMissa || appState.activeMissa.length === 0) return;
+      const cur = getCurrentAudioTrackIndex();
+      const prevIdx = cur > 0 ? cur - 1 : appState.activeMissa.length - 1;
+      if (appState.audioOwner === "stage" && appState.currentScreen === "stage") {
+        openStageMode(prevIdx, appState.stageOriginScreen);
+        startRehearsalAudio({ forceReloadSrc: true, resetTime: true });
+      } else {
+        loadAudioStudioTrack(prevIdx, true, { seamless: true });
+      }
+    },
+    nexttrack: () => {
+      if (!appState.activeMissa || appState.activeMissa.length === 0) return;
+      const nextIdx = (getCurrentAudioTrackIndex() + 1) % appState.activeMissa.length;
+      if (appState.audioOwner === "stage" && appState.currentScreen === "stage") {
+        openStageMode(nextIdx, appState.stageOriginScreen);
+        startRehearsalAudio({ forceReloadSrc: true, resetTime: true });
+      } else {
+        loadAudioStudioTrack(nextIdx, true, { seamless: true });
+      }
+    },
+    seekbackward: (details) => {
+      const offset = (details && details.seekOffset) || 10;
+      const nextTime = Math.max(0, (dom.realAudioElement ? dom.realAudioElement.currentTime : appState.audioCurrentTime) - offset);
+      appState.audioCurrentTime = nextTime;
+      if (dom.realAudioElement && !isNaN(dom.realAudioElement.duration)) {
+        dom.realAudioElement.currentTime = nextTime;
+      }
+      updateAudioDisplay();
+      updateMediaSessionPositionState();
+    },
+    seekforward: (details) => {
+      const offset = (details && details.seekOffset) || 10;
+      const dur = (dom.realAudioElement && !isNaN(dom.realAudioElement.duration)) ? dom.realAudioElement.duration : appState.audioDuration;
+      const nextTime = Math.min(dur || 0, (dom.realAudioElement ? dom.realAudioElement.currentTime : appState.audioCurrentTime) + offset);
+      appState.audioCurrentTime = nextTime;
+      if (dom.realAudioElement && !isNaN(dom.realAudioElement.duration)) {
+        dom.realAudioElement.currentTime = nextTime;
+      }
+      updateAudioDisplay();
+      updateMediaSessionPositionState();
+    },
+    seekto: (details) => {
+      if (!details || typeof details.seekTime !== "number") return;
+      appState.audioCurrentTime = details.seekTime;
+      if (dom.realAudioElement && !isNaN(dom.realAudioElement.duration)) {
+        dom.realAudioElement.currentTime = Math.max(0, Math.min(details.seekTime, dom.realAudioElement.duration));
+      }
+      updateAudioDisplay();
+      updateMediaSessionPositionState();
+    },
+    stop: () => {
+      stopRehearsalAudio();
+      appState.hasActiveAudioSession = false;
+      updateGlobalMiniPlayer();
+    }
+  };
+
+  Object.entries(actions).forEach(([action, handler]) => {
+    try {
+      navigator.mediaSession.setActionHandler(action, handler);
+    } catch (e) {}
+  });
+}
+
+function updateGlobalMiniPlayer() {
+  if (!dom.globalMiniPlayer) return;
+  const allowedScreen = appState.currentScreen === "masses" || appState.currentScreen === "home";
+  const song = getCurrentAudioSong();
+  const shouldShow = Boolean(appState.hasActiveAudioSession && song && allowedScreen);
+
+  dom.globalMiniPlayer.classList.toggle("hidden", !shouldShow);
+  if (dom.appShell) {
+    dom.appShell.classList.toggle("has-mini-player", shouldShow);
+  }
+  if (!shouldShow) return;
+
+  if (dom.miniPlayerTitle) dom.miniPlayerTitle.innerText = song.title || "Canto Litúrgico";
+  if (dom.miniPlayerSubtitle) {
+    const stepNum = song.step || (getCurrentAudioTrackIndex() + 1);
+    dom.miniPlayerSubtitle.innerText = `${stepNum}. ${song.moment}`;
+  }
+  if (dom.btnMiniPlayPause) {
+    dom.btnMiniPlayPause.innerText = appState.isPlayingAudio ? "⏸" : "▶";
+  }
+}
+
+function setupGlobalMiniPlayerEvents() {
+  if (dom.miniPlayerOpenAudio) {
+    dom.miniPlayerOpenAudio.addEventListener("click", () => {
+      openAudioScreen(getCurrentAudioTrackIndex(), false);
+    });
+  }
+  if (dom.btnMiniPlayPause) {
+    dom.btnMiniPlayPause.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (appState.isPlayingAudio) {
+        stopRehearsalAudio();
+      } else {
+        startRehearsalAudio({ keepOwner: true });
+      }
+      updateGlobalMiniPlayer();
+    });
+  }
+  if (dom.btnMiniNext) {
+    dom.btnMiniNext.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!appState.activeMissa || appState.activeMissa.length === 0) return;
+      const nextIdx = (getCurrentAudioTrackIndex() + 1) % appState.activeMissa.length;
+      loadAudioStudioTrack(nextIdx, true, { seamless: true });
+    });
+  }
+  if (dom.btnMiniClose) {
+    dom.btnMiniClose.addEventListener("click", (e) => {
+      e.stopPropagation();
+      stopRehearsalAudio();
+      appState.hasActiveAudioSession = false;
+      appState.audioPlayingDateKey = null;
+      updateGlobalMiniPlayer();
+    });
+  }
+}
+
+function syncAudioUiState(playing) {
+  appState.isPlayingAudio = playing;
+  if (dom.audioPlayIcon) dom.audioPlayIcon.innerText = playing ? "⏸" : "▶";
+  if (dom.deckPlayIcon) dom.deckPlayIcon.innerText = playing ? "⏸" : "▶";
+
+  const song = getCurrentAudioSong();
+  if (dom.deckStatusBadge && song) {
+    if (playing) {
+      dom.deckStatusBadge.innerText = song.audioFile ? "🔊 Tocando MP3 Oficial" : "🎵 Tocando Guia Harmônico";
+    } else {
+      dom.deckStatusBadge.innerText = song.audioFile ? "🔊 MP3 Oficial Pronto" : "🎵 Tom Guia Harmônico";
+    }
+  }
+
+  if ("mediaSession" in navigator) {
+    try {
+      navigator.mediaSession.playbackState = playing ? "playing" : "paused";
+    } catch (e) {}
+  }
+
+  updateGlobalMiniPlayer();
+  if (appState.currentScreen === "audio") {
+    renderAudioTracksList();
+  }
+}
+
+function setupRealAudioElementEvents() {
+  const audioEl = dom.realAudioElement;
+  if (!audioEl || audioEl.dataset.listenersAttached === "1") return;
+  audioEl.dataset.listenersAttached = "1";
+
+  audioEl.addEventListener("loadedmetadata", () => {
+    if (audioEl.duration && !isNaN(audioEl.duration) && isFinite(audioEl.duration)) {
+      appState.audioDuration = audioEl.duration;
+      updateAudioDisplay();
+      updateMediaSessionPositionState();
+    }
+  });
+
+  audioEl.addEventListener("timeupdate", () => {
+    appState.audioCurrentTime = audioEl.currentTime || 0;
+    if (audioEl.duration && !isNaN(audioEl.duration) && isFinite(audioEl.duration)) {
+      appState.audioDuration = audioEl.duration;
+    }
+    updateAudioDisplay();
+    const nowTs = Date.now();
+    if (nowTs - lastMediaPositionUpdateTs > 1500) {
+      lastMediaPositionUpdateTs = nowTs;
+      updateMediaSessionPositionState();
+    }
+  });
+
+  audioEl.addEventListener("play", () => {
+    const song = getCurrentAudioSong();
+    appState.hasActiveAudioSession = true;
+    appState.audioPlayingDateKey = appState.activeDateKey;
+    if (song) updateMediaSession(song);
+    syncAudioUiState(true);
+    updateMediaSessionPositionState();
+  });
+
+  audioEl.addEventListener("pause", () => {
+    // Evita piscar estado pausado durante troca contínua de faixa no fim do áudio
+    if (appState.isSwitchingTrack) return;
+    syncAudioUiState(false);
+  });
+
+  audioEl.addEventListener("ended", () => {
+    handleAudioTrackEnded();
+  });
+}
+
 function toggleRehearsalAudio() {
   if (appState.isPlayingAudio) {
     stopRehearsalAudio();
@@ -2657,62 +3147,75 @@ function toggleRehearsalAudio() {
 }
 
 function handleAudioTrackEnded() {
+  const shouldAdvance = appState.audioAutoPlaySequence
+    && appState.audioOwner === "audio"
+    && appState.activeMissa
+    && appState.activeMissa.length > 0;
+
+  if (shouldAdvance) {
+    const nextIdx = (appState.currentAudioTrackIndex + 1) % appState.activeMissa.length;
+    appState.audioCurrentTime = 0;
+    // Avança sem chamar .pause() para preservar a sessão de áudio em segundo plano no celular
+    loadAudioStudioTrack(nextIdx, true, { seamless: true });
+    return;
+  }
+
   stopRehearsalAudio();
   appState.audioCurrentTime = 0;
   updateAudioDisplay();
-
-  if (appState.currentScreen === "audio" && appState.audioAutoPlaySequence && appState.activeMissa.length > 0) {
-    const nextIdx = (appState.currentAudioTrackIndex + 1) % appState.activeMissa.length;
-    loadAudioStudioTrack(nextIdx, true);
-  } else if (appState.currentScreen === "audio") {
-    renderAudioTracksList();
-  }
 }
 
-function startRehearsalAudio() {
-  appState.isPlayingAudio = true;
-  if (dom.audioPlayIcon) dom.audioPlayIcon.innerText = "⏸";
-  if (dom.deckPlayIcon) dom.deckPlayIcon.innerText = "⏸";
-
-  const activeIdx = appState.currentScreen === "audio" ? appState.currentAudioTrackIndex : appState.currentStageIndex;
+function startRehearsalAudio(options = {}) {
+  if (!options.keepOwner) {
+    appState.audioOwner = appState.currentScreen === "stage" ? "stage" : "audio";
+  }
+  const activeIdx = getCurrentAudioTrackIndex();
   const song = appState.activeMissa[activeIdx] || appState.activeMissa[0];
 
-  if (dom.deckStatusBadge && song) {
-    dom.deckStatusBadge.innerText = song.audioFile ? "🔊 Tocando MP3 Oficial" : "🎵 Tocando Guia Harmônico";
-  }
-
-  if (appState.currentScreen === "audio") {
-    renderAudioTracksList();
-  }
+  appState.hasActiveAudioSession = true;
+  appState.audioPlayingDateKey = appState.activeDateKey;
+  if (song) updateMediaSession(song);
+  syncAudioUiState(true);
 
   // Se a música possuir arquivo MP3 real mapeado
   if (song && song.audioFile && dom.realAudioElement) {
-    if (!dom.realAudioElement.src.includes(song.audioFile)) {
+    appState.isSwitchingTrack = true;
+    const needsNewSrc = options.forceReloadSrc
+      || !dom.realAudioElement.src
+      || !dom.realAudioElement.src.includes(song.audioFile);
+
+    if (needsNewSrc) {
       dom.realAudioElement.src = song.audioFile;
     }
     dom.realAudioElement.playbackRate = appState.audioPlaybackRate;
-    dom.realAudioElement.currentTime = appState.audioCurrentTime;
+    if (options.resetTime) {
+      dom.realAudioElement.currentTime = 0;
+      appState.audioCurrentTime = 0;
+    } else if (appState.audioCurrentTime > 0 && !isNaN(dom.realAudioElement.duration)) {
+      dom.realAudioElement.currentTime = appState.audioCurrentTime;
+    }
 
-    dom.realAudioElement.play().then(() => {
-      // Áudio MP3 tocando com sucesso!
-    }).catch(err => {
-      console.log("Nota: executando sintetizador harmônico como alternativa:", err);
-      playHarmonicArpeggio();
-    });
-
-    dom.realAudioElement.ontimeupdate = () => {
-      appState.audioCurrentTime = dom.realAudioElement.currentTime;
-      if (dom.realAudioElement.duration && !isNaN(dom.realAudioElement.duration)) {
-        appState.audioDuration = dom.realAudioElement.duration;
-      }
-      updateAudioDisplay();
-    };
-
-    dom.realAudioElement.onended = () => {
-      handleAudioTrackEnded();
-    };
+    const playPromise = dom.realAudioElement.play();
+    if (playPromise && typeof playPromise.then === "function") {
+      playPromise.then(() => {
+        appState.isSwitchingTrack = false;
+        syncAudioUiState(true);
+        updateMediaSessionPositionState();
+      }).catch(err => {
+        appState.isSwitchingTrack = false;
+        console.log("Nota: executando sintetizador harmônico como alternativa:", err);
+        playHarmonicArpeggio();
+      });
+    } else {
+      appState.isSwitchingTrack = false;
+    }
   } else {
     // Fallback: Sintetizador acústico harmônico em tempo real
+    if (appState.audioDuration <= 0) appState.audioDuration = 36;
+    if (appState.audioInterval) {
+      clearInterval(appState.audioInterval);
+      appState.audioInterval = null;
+    }
     playHarmonicArpeggio();
     appState.audioInterval = setInterval(() => {
       appState.audioCurrentTime += 0.5 * appState.audioPlaybackRate;
@@ -2726,16 +3229,7 @@ function startRehearsalAudio() {
 }
 
 function stopRehearsalAudio() {
-  appState.isPlayingAudio = false;
-  if (dom.audioPlayIcon) dom.audioPlayIcon.innerText = "▶";
-  if (dom.deckPlayIcon) dom.deckPlayIcon.innerText = "▶";
-
-  const activeIdx = appState.currentScreen === "audio" ? appState.currentAudioTrackIndex : appState.currentStageIndex;
-  const song = appState.activeMissa[activeIdx] || appState.activeMissa[0];
-  if (dom.deckStatusBadge && song) {
-    dom.deckStatusBadge.innerText = song.audioFile ? "🔊 MP3 Oficial Pronto" : "🎵 Tom Guia Harmônico";
-  }
-
+  appState.isSwitchingTrack = false;
   if (dom.realAudioElement) {
     try { dom.realAudioElement.pause(); } catch(e){}
   }
@@ -2748,22 +3242,22 @@ function stopRehearsalAudio() {
       dom.stageYoutubeIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
     } catch(e){}
   }
-  if (appState.currentScreen === "audio") {
-    renderAudioTracksList();
-  }
+  syncAudioUiState(false);
 }
 
 function updateAudioDisplay() {
+  const hasRealDuration = appState.audioDuration > 0 && !isNaN(appState.audioDuration) && isFinite(appState.audioDuration);
   const currentMin = Math.floor(appState.audioCurrentTime / 60);
   const currentSec = Math.floor(appState.audioCurrentTime % 60).toString().padStart(2, "0");
-  const durMin = Math.floor(appState.audioDuration / 60);
-  const durSec = Math.floor(appState.audioDuration % 60).toString().padStart(2, "0");
+  const durLabel = hasRealDuration
+    ? `${Math.floor(appState.audioDuration / 60)}:${Math.floor(appState.audioDuration % 60).toString().padStart(2, "0")}`
+    : "--:--";
 
   if (dom.audioTimeDisplay) {
-    dom.audioTimeDisplay.innerText = `${currentMin}:${currentSec} / ${durMin}:${durSec}`;
+    dom.audioTimeDisplay.innerText = `${currentMin}:${currentSec} / ${durLabel}`;
   }
 
-  const pct = Math.min(100, (appState.audioCurrentTime / (appState.audioDuration || 1)) * 100);
+  const pct = hasRealDuration ? Math.min(100, (appState.audioCurrentTime / appState.audioDuration) * 100) : 0;
   if (dom.audioProgressBar) {
     dom.audioProgressBar.style.width = `${pct}%`;
   }
@@ -2773,7 +3267,7 @@ function updateAudioDisplay() {
     dom.deckCurrentTime.innerText = `${currentMin}:${currentSec}`;
   }
   if (dom.deckTotalTime) {
-    dom.deckTotalTime.innerText = `${durMin}:${durSec}`;
+    dom.deckTotalTime.innerText = durLabel;
   }
   if (dom.deckProgressBar) {
     dom.deckProgressBar.style.width = `${pct}%`;
@@ -2861,30 +3355,14 @@ function playHarmonicArpeggio() {
 // ========================================================
 function openSwapModal() {
   const currentSong = appState.activeMissa[appState.currentStageIndex];
+  const alternatives = getHomologatedAlternativesForSong(currentSong);
+  if (!alternatives || alternatives.length < 2) {
+    showToast("Este momento possui apenas o canto oficial homologado.");
+    return;
+  }
+
   dom.swapModalTitle.innerText = `Trocar: ${currentSong.moment}`;
   dom.swapOptionsContainer.innerHTML = "";
-
-  const homologatedMap = (typeof cantosAlternativosHomologados !== "undefined" && cantosAlternativosHomologados)
-    ? cantosAlternativosHomologados
-    : {};
-
-  let alternatives = homologatedMap[currentSong.moment] || swapAlternatives[currentSong.moment];
-  if (!alternatives && currentSong.moment.toLowerCase().includes("louvor")) {
-    alternatives = homologatedMap["Hino de Louvor"] || swapAlternatives["Glória"];
-  } else if (!alternatives && (currentSong.moment.toLowerCase().startsWith("santo") || currentSong.moment.toLowerCase().includes("eucarística"))) {
-    alternatives = homologatedMap["Santo / Aclamação Eucarística"] || swapAlternatives["Santo"];
-  } else if (!alternatives && currentSong.moment.toLowerCase().includes("abertura")) {
-    alternatives = swapAlternatives["Entrada"];
-  } else if (!alternatives && currentSong.moment.toLowerCase().includes("comunh")) {
-    alternatives = swapAlternatives["Comunhão"];
-  }
-
-  if (!alternatives || alternatives.length === 0) {
-    alternatives = [
-      { title: "Cântico Tradicional Alternativo", author: "Hinário Diocesano", tone: "C", folhetoLabel: "Repertório Local", cifra: "C  G  Am  F\nCanto alternativo sugerido..." },
-      { title: "Canto Comunitário da Paróquia", author: "Comunidade", tone: "G", folhetoLabel: "Repertório Local", cifra: "G  D  Em  C\nGlória e louvor ao Senhor..." }
-    ];
-  }
 
   alternatives.forEach(alt => {
     const card = document.createElement("div");
@@ -4013,4 +4491,16 @@ function exportMassRepertoireToPdf() {
   printWindow.document.open();
   printWindow.document.write(fullPrintHtml);
   printWindow.document.close();
+}
+
+// ========================================================
+// REGISTRO DO SERVICE WORKER (PWA & CACHE OFFLINE SEGURO)
+// ========================================================
+if ("serviceWorker" in navigator) {
+  const isLocalHost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+  if (window.location.protocol === "https:" || isLocalHost) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    });
+  }
 }
