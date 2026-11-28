@@ -14,3 +14,4 @@ extrair_*.py
 build_dados_reais.js
 import_novembro.js
 *.png
+!icons/*.png
