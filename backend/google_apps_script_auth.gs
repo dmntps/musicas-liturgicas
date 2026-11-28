@@ -21,6 +21,13 @@ const RESET_TTL_MS = 15 * 60 * 1000; // 15 minutos
 const RESET_COOLDOWN_MS = 60 * 1000; // 60 segundos entre reenvios
 const RESET_MAX_ATTEMPTS = 5;
 
+function autorizarEnvioDeEmail() {
+  const cota = MailApp.getRemainingDailyQuota();
+  const sheet = getUsersSheet();
+  Logger.log("Permissões OK! Planilha: " + sheet.getName() + " | Cota diária de e-mails: " + cota);
+  return { ok: true, quota: cota, sheet: sheet.getName() };
+}
+
 function doGet(e) {
   return buildJsonResponse({
     ok: true,
@@ -568,10 +575,13 @@ function handleRequestReset(sheet, payload) {
     });
   } catch (mailErr) {
     props.deleteProperty(propKey);
+    const errDetail = (mailErr && mailErr.message) ? mailErr.message : String(mailErr);
+    try { Logger.log("MAIL_ERROR: " + errDetail); } catch (eLog) {}
     return {
       ok: false,
       authVersion: AUTH_VERSION,
       code: "MAIL_ERROR",
+      detail: errDetail,
       message: "Não foi possível enviar o e-mail de recuperação. Autorize o envio de e-mail no Apps Script ou contate a coordenação."
     };
   }
