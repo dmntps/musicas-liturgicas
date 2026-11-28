@@ -503,9 +503,9 @@ const appState = {
   currentUser: null,
   authMode: "login", // "login" ou "register"
   activeFolheto: "caderno-piedade",
-  activeDateKey: "2026-11-22", // Data ativa padrão (Solenidade de Cristo Rei)
-  activeMissa: (typeof missasReais !== "undefined" && missasReais["2026-11-22"])
-    ? JSON.parse(JSON.stringify(missasReais["2026-11-22"].songs))
+  activeDateKey: "2026-11-29", // Data ativa padrão (1º Domingo do Advento)
+  activeMissa: (typeof missasReais !== "undefined" && missasReais["2026-11-29"])
+    ? JSON.parse(JSON.stringify(missasReais["2026-11-29"].songs))
     : JSON.parse(JSON.stringify(missaDomingo23)),
   currentStageIndex: 0,
   stageTranspositions: {},
@@ -781,7 +781,7 @@ function switchActiveFolheto(folhetoId) {
   const availableDates = Object.keys(catalog);
   let targetDate = appState.activeDateKey;
   if (!catalog[targetDate]) {
-    targetDate = availableDates[0] || "2026-11-22";
+    targetDate = availableDates[0] || "2026-11-29";
   }
 
   selectMassDate(targetDate);
@@ -1398,20 +1398,20 @@ function setupMassesEvents() {
   // 3 Caminhos do Painel Superior da Missa Selecionada
   if (dom.btnHeroOpenRepertoire) {
     dom.btnHeroOpenRepertoire.addEventListener("click", () => {
-      openHomeScreenForMass(appState.activeDateKey || "2026-11-22");
+      openHomeScreenForMass(appState.activeDateKey || "2026-11-29");
     });
   }
 
   if (dom.btnHeroOpenAudio) {
     dom.btnHeroOpenAudio.addEventListener("click", () => {
-      selectMassDate(appState.activeDateKey || "2026-11-22");
+      selectMassDate(appState.activeDateKey || "2026-11-29");
       openAudioScreen(0, false);
     });
   }
 
   if (dom.btnHeroOpenStage) {
     dom.btnHeroOpenStage.addEventListener("click", () => {
-      selectMassDate(appState.activeDateKey || "2026-11-22");
+      selectMassDate(appState.activeDateKey || "2026-11-29");
       openStageMode(0, "masses");
     });
   }
@@ -1461,14 +1461,14 @@ function setupMassesEvents() {
     dom.navMassesTab.addEventListener("click", () => openMassesScreen());
   }
   if (dom.navHomeTabFromMasses) {
-    dom.navHomeTabFromMasses.addEventListener("click", () => openHomeScreenForMass(appState.activeDateKey || "2026-11-22"));
+    dom.navHomeTabFromMasses.addEventListener("click", () => openHomeScreenForMass(appState.activeDateKey || "2026-11-29"));
   }
   if (dom.navAudioTabFromMasses) {
     dom.navAudioTabFromMasses.addEventListener("click", () => openAudioScreen(0, false));
   }
   if (dom.navStageTabFromMasses) {
     dom.navStageTabFromMasses.addEventListener("click", () => {
-      selectMassDate(appState.activeDateKey || "2026-11-22");
+      selectMassDate(appState.activeDateKey || "2026-11-29");
       openStageMode(0, "masses");
     });
   }
@@ -1839,7 +1839,7 @@ function initApp() {
   const savedDate = localStorage.getItem("liturgia_selected_mass_date");
   const initialDate = (savedDate && catalog[savedDate])
     ? savedDate
-    : (catalog["2026-11-22"] ? "2026-11-22" : (dates[0] || "2026-11-22"));
+    : (catalog["2026-11-29"] ? "2026-11-29" : (dates[0] || "2026-11-29"));
   const initialTheme = catalog[initialDate] ? catalog[initialDate].bannerTheme : "";
   const loginTheme = initialTheme === "gold" || initialTheme === "mariano"
     ? "Branco"
@@ -3095,7 +3095,7 @@ let stageEditorState = {
 let stagePointerDrag = null;
 
 function getCustomCifrasStorageKey(dateKey = appState.activeDateKey) {
-  return `liturgia_custom_cifras_${dateKey || "2026-11-22"}`;
+  return `liturgia_custom_cifras_${dateKey || "2026-11-29"}`;
 }
 
 function getCustomCifrasMap(dateKey = appState.activeDateKey) {

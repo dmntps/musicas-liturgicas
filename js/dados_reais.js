@@ -1,156 +1,11 @@
 // =========================================================================
 // REPERTÓRIOS REAIS HOMOLOGADOS — PARÓQUIA NOSSA SENHORA DA PIEDADE
 // Boletim Oficial: Igreja em Oração — Novembro e Dezembro de 2026
-// Período Ativo: Cristo Rei (22/11) até o 4º Domingo do Advento (20/12)
+// Período Ativo: 1º Domingo do Advento (29/11) até o 4º Domingo do Advento (20/12)
 // Sincronizado diretamente dos documentos HTML revisados (Padrão 2026.3)
 // =========================================================================
 
 const missasReais = {
-  "2026-11-22": {
-    "dateKey": "2026-11-22",
-    "dateFormatted": "Domingo, 22 de Novembro de 2026",
-    "shortDate": "22/11",
-    "title": "Solenidade de Nosso Senhor Jesus Cristo, Rei do Universo",
-    "ano": "Ano A",
-    "cor": "Branco & Ouro (Solenidade)",
-    "corBadgeClass": "gold-dot",
-    "bannerTheme": "gold",
-    "folhetoNome": "Igreja em Oração",
-    "salmo": "Sl 22(23) — O Senhor é o pastor que me conduz; não me falta coisa alguma.",
-    "status": "Ativa",
-    "songs": [
-      {
-        "id": "nov-cristorei-step1",
-        "step": 1,
-        "moment": "Refrão Orante Inicial",
-        "title": "Confiemo-nos ao Senhor!",
-        "author": "Taizé",
-        "rhythm": "Calmo, tranquilo, orante (3/4)",
-        "folhetoLabel": "Igreja em Oração",
-        "tone": "D",
-        "duration": 180,
-        "audioFile": "audios/lit-confiemo-nos-ao-senhor-taize.mp3",
-        "cifra": "[Intro]\nD  Bm  D  A7  Em  C  Em  A  D\n\nD                Bm\nConfiemo-nos ao Senhor,\nD                   A7\nele é justo e tão bondoso.\nEm               C\nConfiemo-nos ao Senhor.\nEm    A  D\nAlelu---ia!\n\nD                Bm\nConfiemo-nos ao Senhor,\nD                   A7\nele é justo e tão bondoso.\nEm               C\nConfiemo-nos ao Senhor.\nEm    A  D\nAlelu---ia!"
-      },
-      {
-        "id": "nov-cristorei-step2",
-        "step": 2,
-        "moment": "Canto de Abertura",
-        "title": "O Cordeiro imolado é digno!",
-        "author": "Letra: Reginaldo Veloso | Música: Pe. Jocy Rodrigues",
-        "rhythm": "Refrão: 6/8 | Estrofes: 6/8 (C Maior)",
-        "folhetoLabel": "Igreja em Oração",
-        "tone": "Cm",
-        "duration": 180,
-        "audioFile": "audios/lit-o-cordeiro-imolado-e-digno-letra-reginaldo.mp3",
-        "cifra": "[Intro]\nCm  Fm  Bb  Eb  Fm  G  Cm  G  Cm\n\n[Refrão]\n        Cm               Fm\nR. O Cordeiro imolado é digno\n          Bb                Eb\n   de o poder receber e a riqueza,\n       Fm                 G\n   o saber, e a força e a honra,\n        Cm               G\n   para sempre é sua grandeza.\n       Fm                 G\n   O saber, e a força e a honra,\n        Cm       G       Cm\n   para sempre é sua grandeza.\n\n[Estrofe 1]\n   G     C              F\n1. Dá, ó Deus, poder ao Rei\n   C       G          C\n   e a seu Filho, igualmente,\n          F          G\n   de exercer tua justiça:\n         D7          G\n   que governe a tua gente,\n         C              F  C\n   o teu povo e os teus pobres\n          G          C\n   com justiça e retamente.\n\n[Refrão]\n        Cm               Fm\nR. O Cordeiro imolado é digno\n          Bb                Eb\n   de o poder receber e a riqueza,\n       Fm                 G\n   o saber, e a força e a honra,\n        Cm               G\n   para sempre é sua grandeza.\n       Fm                 G\n   O saber, e a força e a honra,\n        Cm       G       Cm\n   para sempre é sua grandeza.\n\n[Estrofe 2]\n   G         C             F\n2. Que as montanhas tragam paz\n   C      G           C\n   e as colinas, a justiça;\n           F             G\n   para os pobres do teu povo\n         D7            G\n   da justiça chegue o dia;\n      C             F C\n   o opressor seja abatido,\n          G            C\n   pobres salvos, alforria!\n\n[Refrão]\n        Cm               Fm\nR. O Cordeiro imolado é digno\n          Bb                Eb\n   de o poder receber e a riqueza,\n       Fm                 G\n   o saber, e a força e a honra,\n        Cm               G\n   para sempre é sua grandeza.\n       Fm                 G\n   O saber, e a força e a honra,\n        Cm       G       Cm\n   para sempre é sua grandeza.\n\n[Estrofe 3]\n   G     C                F\n3. Tanto quanto o sol e a lua\n   C        G      C\n   durará o seu Reinado;\n        F             G\n   como chuva sobre a relva,\n         D7         G\n   vem regar o seu roçado,\n          C          F  C\n   e a justiça a florescer,\n           G           C\n   paz sem fim terá brotado!\n\n[Refrão Final]\n        Cm               Fm\nR. O Cordeiro imolado é digno\n          Bb                Eb\n   de o poder receber e a riqueza,\n       Fm                 G\n   o saber, e a força e a honra,\n        Cm               G\n   para sempre é sua grandeza.\n       Fm                 G\n   O saber, e a força e a honra,\n        Cm       G       Cm\n   para sempre é sua grandeza."
-      },
-      {
-        "id": "nov-cristorei-step3",
-        "step": 3,
-        "moment": "Hino de Louvor",
-        "title": "Glória a Deus nas Alturas",
-        "author": "Grupo Palestrina de Curitiba (Comp.: Casimiro Vidal Nogueira)",
-        "rhythm": "Solene / Litúrgico (4/4)",
-        "folhetoLabel": "Igreja em Oração",
-        "tone": "E",
-        "duration": 180,
-        "audioFile": "audios/lit-gloria-a-deus-nas-alturas-grupo-palestrina.mp3",
-        "cifra": "[Intro]\nE  B7  F#m  E  E7  A  E  B7  E\n\nE                  B7\nGlória a Deus nas alturas\n F#m               E\nGlória a Deus nas alturas\n E7                  A\nGlória a Deus nas alturas\n                    E         B7    E\nE paz na terra aos homens por Ele amados\n\n                      B7\nSenhor Deus, Rei dos céus\n                 F#m\nDeus Pai todo poderoso\n B7         E\nNós vos louvamos\nNós vos bendizemos\nNós vos adoramos\n    E7         A\nNós vos glorificamos\n               E\nNós vos damos graças\n   B7            E\nPor vossa imensa glória\n\n                              B7\nSenhor Jesus Cristo, Filho Unigênito, Senhor Deus\n  F#m        B7                 E\nCordeiro de Deus, Filho de Deus Pai\n                    B7       E\nVós que tirais o pecado do mundo\n         F#      B7\nTende piedade de nós\n E                  B7     E\nVós que tirais o pecado do mundo\n           B7       E\nAcolhei a nossa súplica\n           A      E         B7\nVós que estais à direita do Pai\n          E\nTende piedade de nós\n\n               B7                 E\nSó vós sois o Santo, só vós o Senhor\n          B7              E\nSó vós o Altíssimo, Jesus Cristo\n     B7         E\nCom o Espírito Santo\n        A          B7        E\nNa glória de Deus Pai. A---mém!"
-      },
-      {
-        "id": "nov-cristorei-step4",
-        "step": 4,
-        "moment": "Salmo Responsorial (Sl 22[23])",
-        "title": "O Senhor é o pastor que me conduz",
-        "author": "Letra: Lecionário Dominical | Refrão: Ir. Maria Fortunata | Estrofes: Pe. José Weber",
-        "rhythm": "Ternário / Moderado (3/4)",
-        "folhetoLabel": "Igreja em Oração",
-        "tone": "F",
-        "duration": 180,
-        "audioFile": "audios/lit-o-senhor-e-o-pastor-que-me-conduz-letra-le.mp3",
-        "cifra": "[Intro]\nF  Bb  C  F  C  F\n\n[Refrão]\n       F           Bb              C\nR. O Senhor é o pastor que me conduz;\n          F      C        F\n   não me falta coisa alguma.\n\n[Estrofe 1]\n   F                               C    F\n1. Pelos prados e campinas verdejantes *\n   Dm              Gm\n   ele me leva a descansar.\n   Gm                                  D7   Gm\n   Para as águas repousantes me encaminha, *\n   Gm                 C    F\n   e restaura as minhas forças.\n\n[Refrão]\n       F           Bb              C\nR. O Senhor é o pastor que me conduz;\n          F      C        F\n   não me falta coisa alguma.\n\n[Estrofe 2]\n   F                                C    F\n2. Preparais à minha frente uma mesa, *\n   Dm                     Gm\n   bem à vista do inimigo,\n   Gm                                D7   Gm\n   e com óleo vós ungis minha cabeça; *\n   Gm            C       F\n   o meu cálice transborda.\n\n[Refrão]\n       F           Bb              C\nR. O Senhor é o pastor que me conduz;\n          F      C        F\n   não me falta coisa alguma.\n\n[Estrofe 3]\n   F                                      C    F\n3. Felicidade e todo bem hão de seguir-me *\n   Dm                       Gm\n   por toda a minha vida;\n   Gm                              D7   Gm\n   e, na casa do Senhor, habitarei *\n   Gm              C       F\n   pelos tempos infinitos.\n\n[Refrão Final]\n       F           Bb              C\nR. O Senhor é o pastor que me conduz;\n          F      C        F\n   não me falta coisa alguma."
-      },
-      {
-        "id": "nov-cristorei-step5",
-        "step": 5,
-        "moment": "Aclamação ao Evangelho",
-        "title": "Aleluia. É bendito aquele que vem vindo!",
-        "author": "Letra: Lecionário Dominical | Música: Fr. Fabreti",
-        "rhythm": "Marcha-rancho (4/4)",
-        "folhetoLabel": "Igreja em Oração",
-        "tone": "D",
-        "duration": 180,
-        "audioFile": "audios/lit-aleluia-e-bendito-aquele-que-vem-vindo-mar.mp3",
-        "cifra": "[Intro]\nD  G  D  A7  D  G  D  A7  D\n\n[Refrão]\nD                   G\nAleluia, aleluia! Aleluia, aleluia!\n     D        A7       D\nAleluia, aleluia, aleluia!\n    G        D        A7         D\nAleluia, aleluia! Aleluia, aleluia!\n    G        D        A7         D\nAleluia, aleluia! Aleluia, aleluia!\n\n[Versículo]\n   Bm\nV. É bendito aquele que vem vindo,\n                              G\n   que vem vindo em nome do Senhor,\n   Em\n   e o Reino que vem, seja bendito,\n                                   A7\n   ao que vem e ao seu Reino, o louvor!\n\n[Refrão Final]\nD                   G\nAleluia, aleluia! Aleluia, aleluia!\n     D        A7       D\nAleluia, aleluia, aleluia!\n    G        D        A7         D\nAleluia, aleluia! Aleluia, aleluia!\n    G        D        A7         D\nAleluia, aleluia! Aleluia, aleluia!"
-      },
-      {
-        "id": "nov-cristorei-step6",
-        "step": 6,
-        "moment": "Apresentação das Oferendas",
-        "title": "Bendito sejas, Senhor Deus!",
-        "author": "Letra: Maria de Fátima de Oliveira | Música: Giovanni Rodrigues",
-        "rhythm": "Marcha-rancho (2/4)",
-        "folhetoLabel": "Igreja em Oração",
-        "tone": "Gm",
-        "duration": 180,
-        "audioFile": "audios/lit-bendito-sejas-senhor-deus-marcha-rancho.mp3",
-        "cifra": "[Intro]\nGm  Cm  D7  Gm  Cm  A7  D7  Gm\n\n[Refrão]\n           Gm             Cm\nR. Bendito sejas, Senhor Deus,\n                   D7   Gm\n   pelo vinho e pelo pão:\n          Gm             Cm\n   vão tornar-se no caminho\n       A7      D7     Gm\n   alimento e salvação!\n\n[Estrofe 1]\n        Gm                  D7\n1. Ó Senhor, neste altar colocamos,\n                           Gm\n   com ofertas de pão e de vinho,\n                             Cm\n   alegria, esperança e angústia,\n           A7        D7      Gm\n   que são partes de nosso caminho.\n\n[Refrão]\n           Gm             Cm\nR. Bendito sejas, Senhor Deus,\n                   D7   Gm\n   pelo vinho e pelo pão:\n          Gm             Cm\n   vão tornar-se no caminho\n       A7      D7     Gm\n   alimento e salvação!\n\n[Estrofe 2]\n        Gm                  D7\n2. Mesmo quando forçado a partir\n                       Gm\n   e deixar sua terra natal,\n                            Cm\n   este povo caminha contigo,\n          A7       D7        Gm\n   com vigor, combatendo o mal!\n\n[Refrão]\n           Gm             Cm\nR. Bendito sejas, Senhor Deus,\n                   D7   Gm\n   pelo vinho e pelo pão:\n          Gm             Cm\n   vão tornar-se no caminho\n       A7      D7     Gm\n   alimento e salvação!\n\n[Estrofe 3]\n           Gm                     D7\n3. Se os estranhos nos vêm perguntar:\n                               Gm\n   “povo errante, pra onde tu vais?”\n                             Cm\n   Nós dizemos: “com Deus caminhamos,\n             A7      D7         Gm\n   para o amor, a verdade e a paz”.\n\n[Refrão Final]\n           Gm             Cm\nR. Bendito sejas, Senhor Deus,\n                   D7   Gm\n   pelo vinho e pelo pão:\n          Gm             Cm\n   vão tornar-se no caminho\n       A7      D7     Gm\n   alimento e salvação!"
-      },
-      {
-        "id": "nov-cristorei-step7",
-        "step": 7,
-        "moment": "Aclamação Eucarística",
-        "title": "Santo (Senhor Deus do Universo)",
-        "author": "Música: Frei Adolfo Temme",
-        "rhythm": "Solene / Litúrgico (2/4)",
-        "folhetoLabel": "Igreja em Oração",
-        "tone": "Bm",
-        "duration": 180,
-        "audioFile": "audios/lit-santo-senhor-deus-do-universo-musica-frei-.mp3",
-        "cifra": "[Intro]\nBm  A  G  D/F#  Em  F#7\n\nBm     A      G\nSanto, Santo, Santo,\nD/F#   Em         F#7\nSenhor Deus do universo!\n\n  Bm      C        A/C#           D\nO céu e a terra proclamam a vossa glória!\nA/C# Bm   A     D\nHo---sana nas alturas!\n\nA/C# Bm         Em\nBen--dito o que vem\n   A         D\nem nome do Senhor!\n\nA/C# Bm   A       D\nHo---sana nas alturas,\nA/C# Bm   F#7     Bm\nho---sana nas alturas!"
-      },
-      {
-        "id": "nov-cristorei-step8",
-        "step": 8,
-        "moment": "Canto de Comunhão (Cl 1,12-20)",
-        "title": "Ao Pai agradecemos, pois o Senhor nos conduz",
-        "author": "Versão: Cl 1,12-20 | Ofício Divino das Comunidades | D.R.",
-        "rhythm": "Solene / Canção Litúrgica (4/4)",
-        "folhetoLabel": "Igreja em Oração",
-        "tone": "Dm",
-        "duration": 180,
-        "audioFile": "audios/lit-ao-pai-agradecemos-pois-o-senhor-nos-condu.mp3",
-        "cifra": "[Intro]\nDm  Gm  A  Dm  Gm  Dm\n\n[Refrão]\n      Dm               Gm                   A\nR. Ao Pai agradecemos, pois o Senhor nos conduz\n     Dm               Gm                  Dm\n   à posse da herança dos consagrados, na luz!\n\n[Estrofe 1]\n   Dm                  C       Gm                    Dm\n1. Ao arrancar-nos das trevas, nos transportou ao reinado\n   Bb                  Gm6   A7                  Dm\n   do Filho amado e querido, que nos perdoa os pecados.\n   Dm                C      Gm              Dm\n   Cópia do Deus invisível, da criação o primeiro,\n   Bb                 Gm6   A7                Dm\n   e quanto existe no mundo por meio dele foi feito.\n\n[Refrão]\n      Dm               Gm                   A\nR. Ao Pai agradecemos, pois o Senhor nos conduz\n     Dm               Gm                  Dm\n   à posse da herança dos consagrados, na luz!\n\n[Estrofe 2]\n   Dm                C     Gm                   Dm\n2. Por meio dele foi feito o que há no céu e na terra,\n   Bb                  Gm6  A7                    Dm\n   o que se vê e o que não, e os tronos de quem governa.\n   Dm                 C    Gm                 Dm\n   Tudo foi feito por ele, antes de tudo ele existe,\n   Bb                 Gm6 A7             Dm\n   tudo foi feito pra ele e nele tudo subsiste.\n\n[Refrão]\n      Dm               Gm                   A\nR. Ao Pai agradecemos, pois o Senhor nos conduz\n     Dm               Gm                  Dm\n   à posse da herança dos consagrados, na luz!\n\n[Estrofe 3]\n   Dm                     C     Gm                    Dm\n3. Da Igreja Cristo é a cabeça, dos mortos quem principia,\n   Bb               Gm6   A7                 Dm\n   o que renasce primeiro e em tudo tem primazia.\n   Dm                 C     Gm                 Dm\n   Pois Deus em sua riqueza no Cristo quis habitar,\n   Bb                Gm6   A7              Dm\n   por ele, Deus e o mundo vão se reconciliar.\n\n[Refrão]\n      Dm               Gm                   A\nR. Ao Pai agradecemos, pois o Senhor nos conduz\n     Dm               Gm                  Dm\n   à posse da herança dos consagrados, na luz!\n\n[Estrofe 4]\n   Dm                   C       Gm                 Dm\n4. O Céu e a Terra se encontram na paz de Cristo Jesus,\n   Bb                     Gm6     A7              Dm\n   paz que se faz por seu sangue, o sangue da sua cruz.\n\n[Refrão Final]\n      Dm               Gm                   A\nR. Ao Pai agradecemos, pois o Senhor nos conduz\n     Dm               Gm                  Dm\n   à posse da herança dos consagrados, na luz!"
-      },
-      {
-        "id": "nov-cristorei-step9",
-        "step": 9,
-        "moment": "Pós-Comunhão / Invocação ao Espírito Santo",
-        "title": "Vem, Espírito Santo, vem!",
-        "author": "Refrão Orante - D.R.",
-        "rhythm": "Calmo, orante (3/8)",
-        "folhetoLabel": "Igreja em Oração",
-        "tone": "E",
-        "duration": 180,
-        "audioFile": "audios/lit-vem-espirito-santo-vem-refrao-orante-d-r.mp3",
-        "cifra": "[Intro]\nE  C#m  E  B  F#m  B7  E\n\nE       C#m     E      B\nVem, Espírito Santo, vem!\nF#m    B7    E\nVem iluminar!\n\nE       C#m     E      B\nVem, Espírito Santo, vem!\nF#m    B7    E\nVem iluminar!\n\nE       C#m     E      B\nVem, Espírito Santo, vem!\nF#m    B7    E\nVem iluminar!"
-      },
-      {
-        "id": "nov-cristorei-step10",
-        "step": 10,
-        "moment": "Canto Mariano (Saudação à Mãe do Senhor)",
-        "title": "Salve Rainha, Mãe de Deus!",
-        "author": "Letra e Música: José Alves",
-        "rhythm": "Solene (2/4)",
-        "folhetoLabel": "Igreja em Oração",
-        "tone": "C",
-        "duration": 180,
-        "audioFile": "audios/lit-salve-rainha-mae-de-deus-letra-e-musica-jo.mp3",
-        "cifra": "[Intro]\nC  F  C  Am  G  C\n\n   C           F          C        Am        G\n1. Salve Rainha, Mãe de Deus, és, Senhora, nossa Mãe.\n   C           F          C                 G  C\n2. Nossa doçura, nossa luz, doce Virgem Maria!\n   Am            Em         Am          G  C\n3. Nós a ti clamamos, filhos exilados.\n   F            C        F            G   C\n4. Nós a ti voltamos nosso olhar confiante!\n   Am           Em        Am           G   C\n5. Volta para nós, ó Mãe, teu semblante de amor,\n   F            C          F            G   Am\n6. Dá-nos teu Jesus, ó Mãe, quando a noite passar!\n   C           F          C       Am        G\n7. Salve Rainha, Mãe de Deus, és auxílio do cristão.\n   C            F           C         F       G  C\n8. Ó Mãe clemente, mãe piedosa, doce Virgem Maria!"
-      }
-    ]
-  },
   "2026-11-29": {
     "dateKey": "2026-11-29",
     "dateFormatted": "Domingo, 29 de Novembro de 2026",
@@ -162,7 +17,7 @@ const missasReais = {
     "bannerTheme": "purple",
     "folhetoNome": "Igreja em Oração",
     "salmo": "Sl 79(80) — Iluminai a vossa face sobre nós, convertei-nos para que sejamos salvos!",
-    "status": "Planejada",
+    "status": "Ativa",
     "songs": [
       {
         "id": "nov-advento1-step1",
@@ -194,27 +49,27 @@ const missasReais = {
         "id": "nov-advento1-step3",
         "step": 3,
         "moment": "Acendimento da 1ª Vela do Advento (Antes do Ato Penitencial)",
-        "title": "Uma vela acendemos (1º Domingo)",
-        "author": "Ministério São Miguel Arcanjo | Int.: Márcia Tobias (Cantate)",
+        "title": "Uma vela se acende (1º Domingo)",
+        "author": "Pe. Sérgio Jeremias de Souza",
         "rhythm": "Balada / Canção (4/4)",
         "folhetoLabel": "Igreja em Oração",
-        "tone": "Bb",
+        "tone": "G",
         "duration": 180,
-        "audioFile": "audios/lit-uma-vela-acendemos-1-domingo-ministerio-sa.mp3",
-        "cifra": "[Intro]\nBb  Eb  Bb  Cm  F  Bb\n\n[Estrofe]\n    Bb       Eb            Bb\nUma vela acendemos neste momento,\n             Cm        F        Bb\né a primeira vela da coroa do Advento. (bis)\n\n[Pré-Refrão]\n    F                    Bb\nUma voz que clamava no deserto falou:\n      F                    Bb\n“Preparai os caminhos do Senhor!” (bis)\n\n[Refrão]\n           F               Bb\nVem, vem Jesus, vem, vem Jesus!\n           F              Bb\nQue nos ilumine com a tua luz! (bis)"
+        "audioFile": "audios/lit-uma-vela-se-acende-1-domingo-pe-sergio-jer.mp3",
+        "cifra": "[Intro]\nG  Am  D  D7  G\n\n[Estrofe — 1ª Vela]\nG\nUma vela se acende\n                   Am\nNo caminho a iluminar\n                  D\nPreparemos nossa casa\nD7                 G\nÉ Jesus quem vai chegar\n\n[Refrão]\n      C\nNo Advento a tua vinda\n                   G\nNós queremos preparar\n                          D\nVem, Senhor, que é teu Natal\n        D7           G\nVem nascer em nosso lar"
       },
       {
         "id": "nov-advento1-step4",
         "step": 4,
         "moment": "Salmo Responsorial (Sl 79[80])",
         "title": "Iluminai a vossa face sobre nós",
-        "author": "Letra: Lecionário Dominical | Música: Fr. Joel Postma, OFM",
-        "rhythm": "Recitativo / Solene (2/4)",
+        "author": "Letra: Lecionário Dominical | Melodia: Ir. Míria T. Kolling",
+        "rhythm": "Salmodia / Solene",
         "folhetoLabel": "Igreja em Oração",
-        "tone": "F",
+        "tone": "Em",
         "duration": 180,
         "audioFile": "audios/lit-iluminai-a-vossa-face-sobre-nos-letra-leci.mp3",
-        "cifra": "[Intro]\nF  Dm7  Am  F  Dm  F\n\n[Refrão]\n        F             Dm7          Am\nR. Iluminai a vossa face sobre nós,\n         F        Dm              F\n   convertei-nos, para que sejamos salvos!\n\n[Estrofe 1]\n   Dm\n1. Ó Pastor de Israel, prestai ouvidos. +\n   Dm                           Em       Am\n   Vós que sobre os querubins vos assentais, *\n   F                 G           Dm\n   aparecei cheio de glória e esplendor!\n   Dm                     Em      Am\n   Despertai vosso poder, ó nosso Deus *\n   F             G           Dm\n   vinde logo nos trazer a salvação!\n\n[Refrão]\n        F             Dm7          Am\nR. Iluminai a vossa face sobre nós,\n         F        Dm              F\n   convertei-nos, para que sejamos salvos!\n\n[Estrofe 2]\n   Dm\n2. Voltai-vos para nós, Deus do universo! +\n   Dm                      Em     Am\n   Olhai dos altos céus e observai. *\n   F                 G          Dm\n   Visitai a vossa vinha e protegei-a!\n   Dm                           Em      Am\n   Foi a vossa mão direita que a plantou; *\n   F             G                  Dm\n   protegei-a, e ao rebento que firmastes!\n\n[Refrão]\n        F             Dm7          Am\nR. Iluminai a vossa face sobre nós,\n         F        Dm              F\n   convertei-nos, para que sejamos salvos!\n\n[Estrofe 3]\n   Dm                               Em     Am\n3. Pousai a mão por sobre o vosso protegido, *\n   F                                G      Dm\n   o filho do homem que escolhestes para vós!\n   Dm                             Em      Am\n   E nunca mais vos deixaremos, Senhor Deus! *\n   F                      G        Dm\n   Dai-nos vida, e louvaremos vosso nome!\n\n[Refrão Final]\n        F             Dm7          Am\nR. Iluminai a vossa face sobre nós,\n         F        Dm              F\n   convertei-nos, para que sejamos salvos!"
+        "cifra": "[Intro]\nEm  C  Am  B  B7  Em\n\n[Refrão]\n   Em               C          Am\nR. Iluminai a vossa face sobre nós,\n          B            B7         Em\n   convertei-nos para que sejamos salvos!\n\n[Estrofe 1]\n   Em\n1. Pastor de Israel, prestai ouvidos.  +\n                                      Bm\n   Vós que sobre os querubins vos assentais,\n    C                              G\n   Aparecei cheio de glória e esplendor!\n   B7                              Em\n   Despertai vosso poder, ó nosso Deus\n   D7                            G\n   E vinde logo nos trazer a salvação.\n\n[Refrão]\n   Em               C          Am\nR. Iluminai a vossa face sobre nós,\n          B            B7         Em\n   convertei-nos para que sejamos salvos!\n\n[Estrofe 2]\n   Em\n2. Voltai-vos para nós, Deus do universo!   +\n                               Bm\n   Olhai dos altos céus e observai.\n   C                             G\n   Visitai a vossa vinha e protegei-a!\n   B7                               Em\n   Foi a vossa mão direita que a plantou;\n   D7                               G\n   Protegei-a, e ao rebento que firmastes!\n\n[Refrão]\n   Em               C          Am\nR. Iluminai a vossa face sobre nós,\n          B            B7         Em\n   convertei-nos para que sejamos salvos!\n\n[Estrofe 3]\n   Em                                   Bm\n3. Pousai a mão por sobre o vosso protegido,\n   C                                      G\n   O filho do homem que escolhestes para vós!\n   B7                                  Em\n   E nunca mais vos deixaremos, Senhor Deus!\n   D7                                G\n   Dai-nos vida, e louvaremos vosso nome!\n\n[Refrão Final]\n   Em               C          Am\nR. Iluminai a vossa face sobre nós,\n          B            B7         Em\n   convertei-nos para que sejamos salvos!"
       },
       {
         "id": "nov-advento1-step5",
@@ -339,14 +194,14 @@ const missasReais = {
         "id": "dez-advento2-step3",
         "step": 3,
         "moment": "Acendimento da 2ª Vela do Advento (Antes do Ato Penitencial)",
-        "title": "Uma vela acendemos (2º Domingo)",
-        "author": "Ministério São Miguel Arcanjo | Int.: Márcia Tobias (Cantate)",
+        "title": "Uma vela se acende (2º Domingo)",
+        "author": "Pe. Sérgio Jeremias de Souza",
         "rhythm": "Balada / Canção (4/4)",
         "folhetoLabel": "Igreja em Oração",
-        "tone": "Bb",
+        "tone": "G",
         "duration": 180,
-        "audioFile": "audios/lit-uma-vela-acendemos-2-domingo-ministerio-sa.mp3",
-        "cifra": "[Intro]\nBb  Eb  Bb  Cm  F  Bb\n\n[Estrofe]\n    Bb       Eb            Bb\nUma vela acendemos neste momento,\n            Cm        F        Bb\né a segunda vela da coroa do Advento. (bis)\n\n[Pré-Refrão]\n    F                    Bb\nUma voz que clamava no deserto falou:\n      F                    Bb\n“Preparai os caminhos do Senhor!” (bis)\n\n[Refrão]\n           F               Bb\nVem, vem Jesus, vem, vem Jesus!\n           F              Bb\nQue nos ilumine com a tua luz! (bis)"
+        "audioFile": "audios/lit-uma-vela-se-acende-1-domingo-pe-sergio-jer.mp3",
+        "cifra": "[Intro]\nG  Am  D  D7  G\n\n[Estrofe — 2ª Vela]\nG\nA segunda vela acesa\n                  Am\nVem a vida clarear\n                         D\nRejeitemos, pois, as trevas\nD7                 G\nÉ Jesus quem vai chegar\n\n[Refrão]\n      C\nNo Advento a tua vinda\n                   G\nNós queremos preparar\n                          D\nVem, Senhor, que é teu Natal\n        D7           G\nVem nascer em nosso lar"
       },
       {
         "id": "dez-advento2-step4",
@@ -458,27 +313,27 @@ const missasReais = {
         "id": "dez-imaculada-step1",
         "step": 1,
         "moment": "Refrão Orante Inicial",
-        "title": "Santa Maria, Mãe do Senhor!",
+        "title": "Santa Maria, mãe do Senhor!",
         "author": "Taizé",
-        "rhythm": "Calmo, orante (4/4)",
+        "rhythm": "Tranquilo, suave (4/4)",
         "folhetoLabel": "Igreja em Oração",
         "tone": "F",
         "duration": 180,
         "audioFile": "audios/lit-santa-maria-mae-do-senhor-taize.mp3",
-        "cifra": "[Intro]\nF  Dm9  Gm7  C7  F\n\n   F     Dm9    Gm7    C7     F\nSanta Maria, mãe do Senhor,\n   F     Dm9    Gm7    C7     F\nSanta Maria, mãe do Senhor!\n\n   F     Dm9    Gm7    C7     F\nSanta Maria, mãe do Senhor,\n   F     Dm9    Gm7    C7     F\nSanta Maria, mãe do Senhor!"
+        "cifra": "[Intro]\nF  Dm9  Gm7  C  F\n\n[Refrão Orante]\n   F      Dm9   Gm7     C\nSanta Maria, mãe do Senhor,\n  F       Dm     Gm7   C\nrogai por nós pecadores,\n  F       Dm9      Gm7       C\nagora e na hora da nossa morte.\n   F    Dm  Gm7 C  F  (Gm7) (C)\nSanta Mari----------a.\n\n   F      Dm9   Gm7     C\nSanta Maria, mãe do Senhor,\n  F       Dm     Gm7   C\nrogai por nós pecadores,\n  F       Dm9      Gm7       C\nagora e na hora da nossa morte.\n   F    Dm  Gm7 C  F\nSanta Mari----------a."
       },
       {
         "id": "dez-imaculada-step2",
         "step": 2,
         "moment": "Canto de Abertura",
-        "title": "Salve, ó Santa Mãe de Deus!",
+        "title": "Salve, ó santa Mãe de Deus!",
         "author": "Letra: Missal Romano e Sl. 113 | Música: Frei Joel Postma, OFM",
-        "rhythm": "Solene (4/4)",
+        "rhythm": "Solene (2/4)",
         "folhetoLabel": "Igreja em Oração",
         "tone": "Gm",
         "duration": 180,
         "audioFile": "audios/lit-salve-o-santa-mae-de-deus-letra-missal-rom.mp3",
-        "cifra": "[Intro]\nGm  Dm  Eb  F  Gm\n\n[Refrão]\n   Gm       Dm       Eb            F       Gm\nR. Salve, ó Santa Mãe de Deus, geraste o Rei\n       Eb           F          Gm\nque governa para sempre céus e terra! (bis)\n\n[Estrofe 1]\n   Gm                Dm\n1. Louvai, servos do Senhor,\n   Eb             F        Gm\n   louvai o nome do Senhor!\n   Eb                F\n   Bendito seja o seu nome,\n      Eb             F       Gm\n   agora e para todo o sempre!\n\n[Refrão]\n   Gm       Dm       Eb            F       Gm\nR. Salve, ó Santa Mãe de Deus, geraste o Rei\n       Eb           F          Gm\nque governa para sempre céus e terra! (bis)\n\n[Estrofe 2]\n   Gm                     Dm\n2. Do nascer do sol ao poente,\n   Eb              F        Gm\n   louvado seja o nome de Deus!\n   Eb                    F\n   O Senhor está acima das nações,\n       Eb              F        Gm\n   sua glória acima de todos os céus!\n\n[Refrão Final]\n   Gm       Dm       Eb            F       Gm\nR. Salve, ó Santa Mãe de Deus, geraste o Rei\n       Eb           F          Gm\nque governa para sempre céus e terra! (bis)"
+        "cifra": "[Intro]\nGm  Dm  Eb  F  Gm  Eb  D\n\n[Refrão]\n   Gm   Dm    Eb     F      Gm            Eb    D\nR. Salve, ó Santa Mãe de Deus, vós destes à luz o Rei\n       Gm    Dm    Cm   Dm   Gm     Cm     Dm  G\n   que governa o céu e a terra pelos séculos eternos. (bis)\n\n[Estrofe 1]\n            Gm     Dm7    Gm\n1. Louvai, ó servos do Senhor,\n                Eb      D\n   Louvai o nome do Senhor!\n\n[Refrão]\n   Gm   Dm    Eb     F      Gm            Eb    D\nR. Salve, ó Santa Mãe de Deus, vós destes à luz o Rei\n       Gm    Dm    Cm   Dm   Gm     Cm     Dm  G\n   que governa o céu e a terra pelos séculos eternos. (bis)\n\n[Estrofe 2]\n         Gm          Dm7    Gm\n2. O Senhor está acima das nações,\n                  Eb           D\n   Sua glória vai além dos altos céus.\n\n[Refrão]\n   Gm   Dm    Eb     F      Gm            Eb    D\nR. Salve, ó Santa Mãe de Deus, vós destes à luz o Rei\n       Gm    Dm    Cm   Dm   Gm     Cm     Dm  G\n   que governa o céu e a terra pelos séculos eternos. (bis)\n\n[Estrofe 3]\n             Gm         Dm7  Gm\n3. Levanta da poeira o indigente\n                Eb        D\n   E retira o pobre do monturo,\n\n[Refrão]\n   Gm   Dm    Eb     F      Gm            Eb    D\nR. Salve, ó Santa Mãe de Deus, vós destes à luz o Rei\n       Gm    Dm    Cm   Dm   Gm     Cm     Dm  G\n   que governa o céu e a terra pelos séculos eternos. (bis)\n\n[Estrofe 4]\n           Gm            Dm7     Gm\n4. Faz a estéril, mãe feliz em sua casa,\n                   Eb            D\n   Vivendo rodeada de seus filhos.\n\n[Refrão Final]\n   Gm   Dm    Eb     F      Gm            Eb    D\nR. Salve, ó Santa Mãe de Deus, vós destes à luz o Rei\n       Gm    Dm    Cm   Dm   Gm     Cm     Dm  G\n   que governa o céu e a terra pelos séculos eternos. (bis)"
       },
       {
         "id": "dez-imaculada-step3",
@@ -499,30 +354,30 @@ const missasReais = {
         "moment": "Salmo Responsorial (Sl 97[98])",
         "title": "Cantai ao Senhor Deus um canto novo",
         "author": "Letra: Lecionário Dominical | Música: Ir. Míria T. Kolling",
-        "rhythm": "Balada / Festivo (2/4)",
+        "rhythm": "Festivo (2/4)",
         "folhetoLabel": "Igreja em Oração",
-        "tone": "F",
+        "tone": "G",
         "duration": 180,
         "audioFile": "audios/lit-cantai-ao-senhor-deus-um-canto-novo-letra-.mp3",
-        "cifra": "[Intro]\nF  Bb  C7  F  Dm  Gm  C7  F\n\n[Refrão]\n   F                 Bb           C7             F\nR. Cantai ao Senhor Deus um canto novo, porque Ele fez prodígios!\n                     Bb           C7             F\n   Cantai ao Senhor Deus um canto novo, porque Ele fez prodígios!\n\n[Estrofe 1]\n   F                      Bb            C7             F\n1. Cantai ao Senhor Deus um canto novo, porque Ele fez prodígios!\n         Dm             Gm                  C7            F\n   Sua mão e o seu braço forte e santo alcançaram-lhe a vitória.\n\n[Refrão]\n   F                 Bb           C7             F\nR. Cantai ao Senhor Deus um canto novo, porque Ele fez prodígios!\n                     Bb           C7             F\n   Cantai ao Senhor Deus um canto novo, porque Ele fez prodígios!\n\n[Estrofe 2]\n       F              Bb             C7               F\n2. O Senhor fez conhecer a salvação, e às nações, sua justiça;\n      Dm                Gm             C7               F\n   Recordou o seu amor sempre fiel pela casa de Israel.\n\n[Refrão]\n   F                 Bb           C7             F\nR. Cantai ao Senhor Deus um canto novo, porque Ele fez prodígios!\n                     Bb           C7             F\n   Cantai ao Senhor Deus um canto novo, porque Ele fez prodígios!\n\n[Estrofe 3]\n       F                  Bb             C7                   F\n3. Os confins do universo contemplaram a salvação do nosso Deus.\n      Dm                Gm                   C7          F\n   Aclamai o Senhor Deus, ó terra inteira, alegrai-vos e exultai!\n\n[Refrão Final]\n   F                 Bb           C7             F\nR. Cantai ao Senhor Deus um canto novo, porque Ele fez prodígios!\n                     Bb           C7             F\n   Cantai ao Senhor Deus um canto novo, porque Ele fez prodígios!"
+        "cifra": "[Intro]\nG  G°  Am  D7  G\n\n[Refrão]\n      G             G°          Am\nR. Cantai ao Senhor Deus um canto novo,\n          D7          G\n   porque Ele fez prodígios!\n\n[Estrofe 1]\n   Em                         Bm       C           G\n1. Cantai ao Senhor Deus um canto novo, / porque Ele fez prodígios!\n   D7                            G         D7            G\n   Sua mão e o seu braço forte e santo alcançaram-lhe a vitória.\n\n[Refrão]\n      G             G°          Am\nR. Cantai ao Senhor Deus um canto novo,\n          D7          G\n   porque Ele fez prodígios!\n\n[Estrofe 2]\n     Em                    Bm     C              G\n2. O Senhor fez conhecer a salvação, / e às nações, sua justiça;\n   D7                       G     D7               G\n   Recordou o seu amor sempre fiel / pela casa de Israel.\n\n[Refrão]\n      G             G°          Am\nR. Cantai ao Senhor Deus um canto novo,\n          D7          G\n   porque Ele fez prodígios!\n\n[Estrofe 3]\n      Em                    Bm       C               G\n3. Os confins do universo contemplaram / a salvação do nosso Deus.\n   D7                         G       D7               G\n   Aclamai o Senhor Deus, ó terra inteira / alegrai-vos e exultai!\n\n[Refrão Final]\n      G             G°          Am\nR. Cantai ao Senhor Deus um canto novo,\n          D7          G\n   porque Ele fez prodígios!"
       },
       {
         "id": "dez-imaculada-step5",
         "step": 5,
         "moment": "Aclamação ao Evangelho",
-        "title": "Aleluia, aleluia! Alegra-te, ó cheia de graça!",
+        "title": "Aleluia, aleluia! Alegra-te, ó Maria!",
         "author": "Letra e Música: Reginaldo Veloso",
         "rhythm": "Balada (6/8)",
         "folhetoLabel": "Igreja em Oração",
         "tone": "Gm",
         "duration": 180,
-        "audioFile": "audios/lit-aleluia-aleluia-alegra-te-o-cheia-de-graca.mp3",
-        "cifra": "[Intro]\nGm  Dm  Gm  F  Gm  Cm  Bb  Cm  Gm\n\n[Refrão]\nGm       Dm        Gm\nS: Aleluia, aleluia!\nGm       F         Gm\nT: Aleluia, aleluia!\nCm                  Bb  Cm\nS: Alegra-te, ó cheia de graça!\nCm                  Bb  Cm\nT: Alegra-te, ó cheia de graça!\nGm           Dm    Gm\nS: O Senhor está contigo!\nGm           F     Gm\nT: O Senhor está contigo!\nCm              Bb  Cm\nS: Bendita entre as mulheres!\nCm              Bb  Cm\nT: Bendita entre as mulheres!\nGm       Dm        Gm\nS: Aleluia, aleluia!\nGm       F         Gm\nT: Aleluia, aleluia!"
+        "audioFile": "audios/lit-aleluia-aleluia-alegra-te-o-maria-letra-e-.mp3",
+        "cifra": "[Intro]\nGm  Dm  Gm  F  Gm\n\n[Refrão]\n   Gm     Dm     Gm\nS: Aleluia, aleluia!\n   Gm     F      Gm\nT: Aleluia, aleluia!\n\n[Versículo]\n   Cm          Bb   Cm\nS: Alegra-te, ó Maria!\n   Cm          Bb   Cm\nT: Alegra-te, ó Maria!\n   Cm  Gm       Dm     Gm\nS: O Senhor está contigo!\n   Cm  Gm       Dm     Gm\nT: O Senhor está contigo!\n   Cm     Gm       Dm        Gm\nS: És bendita entre as mulheres!\n   Cm     Gm       Dm        Gm\nT: És bendita entre as mulheres!\n\n[Refrão Final]\n   Gm     Dm     Gm\nS: Aleluia, aleluia!\n   Gm     F      Gm\nT: Aleluia, aleluia!"
       },
       {
         "id": "dez-imaculada-step6",
         "step": 6,
-        "moment": "Apresentação das Oferendas",
+        "moment": "Apresentação das Oferendas e Coleta Fraterna",
         "title": "Maria, cheia de graça, não teme o que possa vir",
         "author": "Letra: José Thomaz Filho | Música: Fr. Fabreti",
         "rhythm": "Balada (6/8)",
@@ -530,7 +385,7 @@ const missasReais = {
         "tone": "Dm",
         "duration": 180,
         "audioFile": "audios/lit-maria-cheia-de-graca-nao-teme-o-que-possa-.mp3",
-        "cifra": "[Intro]\nDm  Gm  A7  Dm  Gm  A7  Dm\n\n[Refrão]\n   Dm                    Gm\nR. Maria, cheia de graça, não teme o que possa vir:\n         A7                 Dm\n   “Palavra de Deus não passa, sem antes tudo cumprir!” (bis)\n\n[Estrofe 1]\n       Dm               Gm\n1. Na gruta singela da vida,\n        A7                 Dm\n   um “sim” brota puro de amor.\n        Bb                 Gm\n   Nas mãos do Senhor acolhida,\n        A7                 Dm\n   se entrega pra ser servidora!\n\n[Refrão]\n   Dm                    Gm\nR. Maria, cheia de graça, não teme o que possa vir:\n         A7                 Dm\n   “Palavra de Deus não passa, sem antes tudo cumprir!” (bis)\n\n[Estrofe 2]\n      Dm                  Gm\n2. Trazemos o vinho e este pão,\n        A7                 Dm\n   no altar deste santo ofertório:\n       Bb                 Gm\n   Bendito o Deus da criação\n          A7               Dm\n   que em nós realiza prodígios!\n\n[Refrão Final]\n   Dm                    Gm\nR. Maria, cheia de graça, não teme o que possa vir:\n         A7                 Dm\n   “Palavra de Deus não passa, sem antes tudo cumprir!” (bis)"
+        "cifra": "[Intro]\nDm  Gm  A7  Dm  D7  Gm  C7  F\n\n[Estrofe 1]\n     Dm         Gm          A7       Dm\n1. Maria, cheia de graça, não teme o que possa vir.\n     D7            Gm         C7         F\n   “Palavra de Deus não passa, sem antes tudo florir”.\n\n[Refrão]\n      Gm       Dm       A7       Dm\nR. Na casa de Nazaré, um Sim ecoou sereno.\n      Gm       Dm       A7          Dm\n   Na casa de Nazaré, Deus mesmo se fez pequeno.\n\n[Estrofe 2]\n     Dm         Gm        A7         Dm\n2. José não temeu agrura, Maria foi sempre forte.\n     D7            Gm       C7            F\n   E Deus encontrou ternura, e o povo, uma nova sorte.\n\n[Refrão]\n      Gm       Dm       A7       Dm\nR. Na casa de Nazaré, um Sim ecoou sereno.\n      Gm       Dm       A7          Dm\n   Na casa de Nazaré, Deus mesmo se fez pequeno.\n\n[Estrofe 3]\n     Dm         Gm         A7           Dm\n3. Maria foi resistente, falou pelo povo seu.\n      D7         Gm       C7         F\n   “O braço do prepotente Deus mesmo desmereceu”.\n\n[Refrão Final]\n      Gm       Dm       A7       Dm\nR. Na casa de Nazaré, um Sim ecoou sereno.\n      Gm       Dm       A7          Dm\n   Na casa de Nazaré, Deus mesmo se fez pequeno."
       },
       {
         "id": "dez-imaculada-step7",
@@ -549,14 +404,14 @@ const missasReais = {
         "id": "dez-imaculada-step8",
         "step": 8,
         "moment": "Canto de Comunhão",
-        "title": "Ave Maria, cheia de graça",
+        "title": "Ave Maria, cheia de graça!",
         "author": "Versão e Música: Reginaldo Veloso",
-        "rhythm": "Balada (6/8)",
+        "rhythm": "Balada, tranquilo (6/8)",
         "folhetoLabel": "Igreja em Oração",
-        "tone": "F",
+        "tone": "Dm",
         "duration": 180,
         "audioFile": "audios/lit-ave-maria-cheia-de-graca-versao-e-musica-r.mp3",
-        "cifra": "[Intro]\nF  Bb  C  F  Dm  Gm  C7  F\n\n[Refrão]\n   F             Bb      C7             F\nR. Ave Maria, cheia de graça, o Senhor é contigo!\n   Dm               Gm         C7              F\n   Bendita és tu entre as mulheres, bendito é teu fruto! (bis)\n\n[Estrofe 1]\n   F                   Bb\n1. Minh'alma engrandece ao Senhor,\n       C7               F\n   meu espírito se rejubila\n      Dm                Gm\n   em Deus, o meu bom Salvador,\n         C7                  F\n   que olhou para a sua servidora!\n\n[Refrão]\n   F             Bb      C7             F\nR. Ave Maria, cheia de graça, o Senhor é contigo!\n   Dm               Gm         C7              F\n   Bendita és tu entre as mulheres, bendito é teu fruto! (bis)\n\n[Estrofe 2]\n      F                  Bb\n2. O Todo-Poderoso fez em mim\n        C7               F\n   maravilhas de santo vigor;\n        Dm                  Gm\n   sua graça se estende sem fim\n        C7                  F\n   aos que temem seu santo favor!\n\n[Refrão Final]\n   F             Bb      C7             F\nR. Ave Maria, cheia de graça, o Senhor é contigo!\n   Dm               Gm         C7              F\n   Bendita és tu entre as mulheres, bendito é teu fruto! (bis)"
+        "cifra": "[Intro]\nDm  Gm  Dm  Gm  Dm\n\n[Refrão]\n           Dm    Gm     Dm      Gm     Dm\nR. “Ave Maria, cheia de graça, Mãe do Senhor,\n      Gm     Dm    Bb     Gm      A    Dm\n   bendita és tu entre as mulheres”, diz Isabel.\n              Gm     Dm  Gm    Dm   Am\n   Todas as gentes celebram hoje o teu louvor.\n          Dm     C       F        Am        Dm\n   Tu és na terra a Virgem bela que encanta o céu!\n\n[Estrofe 1]\n        Gm     Dm\n1. Louva, Jerusalém,\n        Gm        Dm\n   Louva o Senhor teu Deus:\n               Gm  Dm\n   Tuas portas reforçou\n   F        G    Am\n   E os teus abençoou,\n   Dm      Em   Dm\n   Te cumulou de paz\n     Gm     Am   Dm\n   E o pão do céu te traz.\n\n[Refrão]\n           Dm    Gm     Dm      Gm     Dm\nR. “Ave Maria, cheia de graça, Mãe do Senhor,\n      Gm     Dm    Bb     Gm      A    Dm\n   bendita és tu entre as mulheres”, diz Isabel.\n              Gm     Dm  Gm    Dm   Am\n   Todas as gentes celebram hoje o teu louvor.\n          Dm     C       F        Am        Dm\n   Tu és na terra a Virgem bela que encanta o céu!\n\n[Estrofe 2]\n        Gm     Dm\n2. Sua Palavra envia,\n        Gm       Dm\n   Corre veloz sua voz.\n             Gm     Dm\n   Da névoa desce o véu,\n     F     G     Am\n   Unindo a terra e o céu;\n       Dm     Em     Dm\n   As nuvens se desmancham,\n      Gm    Am     Dm\n   O vento sopra e avança.\n\n[Refrão]\n           Dm    Gm     Dm      Gm     Dm\nR. “Ave Maria, cheia de graça, Mãe do Senhor,\n      Gm     Dm    Bb     Gm      A    Dm\n   bendita és tu entre as mulheres”, diz Isabel.\n              Gm     Dm  Gm    Dm   Am\n   Todas as gentes celebram hoje o teu louvor.\n          Dm     C       F        Am        Dm\n   Tu és na terra a Virgem bela que encanta o céu!\n\n[Estrofe 3]\n       Gm    Dm\n3. Ao povo revelou\n       Gm      Dm\n   Palavras de amor.\n            Gm     Dm\n   A sua Lei nos deu\n     F    G     Am\n   E o mandamento seu;\n        Dm      Em  Dm\n   Com ninguém fez assim;\n    Gm    Am   Dm\n   Amou até o fim.\n\n[Refrão]\n           Dm    Gm     Dm      Gm     Dm\nR. “Ave Maria, cheia de graça, Mãe do Senhor,\n      Gm     Dm    Bb     Gm      A    Dm\n   bendita és tu entre as mulheres”, diz Isabel.\n              Gm     Dm  Gm    Dm   Am\n   Todas as gentes celebram hoje o teu louvor.\n          Dm     C       F        Am        Dm\n   Tu és na terra a Virgem bela que encanta o céu!\n\n[Estrofe 4]\n       Gm     Dm\n4. A Virgem, mãe será,\n       Gm      Dm\n   Um Filho à luz dará,\n            Gm     Dm\n   Seu nome, Emanuel;\n       F      G     Am\n   “Conosco Deus” do céu;\n     Dm     Em  Dm\n   O mal desprezará,\n     Gm    Am  Dm\n   O bem escolherá.\n\n[Refrão]\n           Dm    Gm     Dm      Gm     Dm\nR. “Ave Maria, cheia de graça, Mãe do Senhor,\n      Gm     Dm    Bb     Gm      A    Dm\n   bendita és tu entre as mulheres”, diz Isabel.\n              Gm     Dm  Gm    Dm   Am\n   Todas as gentes celebram hoje o teu louvor.\n          Dm     C       F        Am        Dm\n   Tu és na terra a Virgem bela que encanta o céu!\n\n[Estrofe 5]\n       Gm      Dm\n5. Ao Pai do céu louvemos\n        Gm       Dm\n   E ao que vem cantemos;\n           Gm      Dm\n   E ao Divino, então,\n     F    G    Am\n   A nossa louvação!\n        Dm      Em     Dm\n   Os Três, que são um Deus,\n     Gm    Am    Dm\n   Exalte o povo seu!\n\n[Refrão Final]\n           Dm    Gm     Dm      Gm     Dm\nR. “Ave Maria, cheia de graça, Mãe do Senhor,\n      Gm     Dm    Bb     Gm      A    Dm\n   bendita és tu entre as mulheres”, diz Isabel.\n              Gm     Dm  Gm    Dm   Am\n   Todas as gentes celebram hoje o teu louvor.\n          Dm     C       F        Am        Dm\n   Tu és na terra a Virgem bela que encanta o céu!"
       },
       {
         "id": "dez-imaculada-step9",
@@ -569,7 +424,7 @@ const missasReais = {
         "tone": "E",
         "duration": 180,
         "audioFile": "audios/lit-vem-espirito-santo-vem-refrao-orante-d-r.mp3",
-        "cifra": "[Intro]\nE  C#m  E  B  F#m  B7  E\n\nE              C#m   E        B\nVem, Espírito Santo, vem!\nF#m   B7       E\nVem iluminar!\n\nE              C#m   E        B\nVem, Espírito Santo, vem!\nF#m   B7       E\nVem iluminar!\n\nE              C#m   E        B\nVem, Espírito Santo, vem!\nF#m   B7       E\nVem iluminar!"
+        "cifra": "[Intro]\nE  C#m  E  B  F#m  B7  E\n\nE       C#m     E      B\nVem, Espírito Santo, vem!\nF#m    B7    E\nVem iluminar!\n\nE       C#m     E      B\nVem, Espírito Santo, vem!\nF#m    B7    E\nVem iluminar!\n\nE       C#m     E      B\nVem, Espírito Santo, vem!\nF#m    B7    E\nVem iluminar!"
       },
       {
         "id": "dez-imaculada-step10",
@@ -582,7 +437,7 @@ const missasReais = {
         "tone": "G",
         "duration": 180,
         "audioFile": "audios/lit-maria-do-sonho-de-deus-letra-e-musica-mari.mp3",
-        "cifra": "[Intro]\nG  Em7  Am7  D  G  D7\n\n[Estrofe 1]\n     G               Em7\n1. Maria do sonho de Deus,\n          Am7                D\n   do sonho mais lindo que é seu.\n      G               Em7\n   Do sonho do povo em clamor:\n      Am7       D      D7  G\n   “Que venha Jesus Salvador!”\n\n[Refrão]\n   C            Am       D7\nR. Sonho lindo, encantador,\n                G\n   esperança, amor e fé.\n   Em    Am\n   Sonha Deus libertador\n   D     Am     D7    G\n   com Jesus de Nazaré!\n\n[Estrofe 2]\n        G              Em7\n2. A graça do Pai em Maria,\n         Am7             D\n   um anjo de Deus anuncia.\n       G             Em7\n   Ao mundo revela Jesus,\n     Am7      D        D7  G\n   o Espírito Santo a conduz.\n\n[Refrão]\n   C            Am       D7\nR. Sonho lindo, encantador,\n                G\n   esperança, amor e fé.\n   Em    Am\n   Sonha Deus libertador\n   D     Am     D7    G\n   com Jesus de Nazaré!\n\n[Estrofe 3]\n       G             Em7\n3. A terra que Deus preparou\n        Am7               D\n   acolhe este amor que chegou.\n     G                Em7\n   Sinal que nos vem indicar\n      Am7         D      D7  G\n   a casa onde Deus quer morar.\n\n[Refrão Final]\n   C            Am       D7\nR. Sonho lindo, encantador,\n                G\n   esperança, amor e fé.\n   Em    Am\n   Sonha Deus libertador\n   D     Am     D7    G\n   com Jesus de Nazaré!"
+        "cifra": "[Intro]\nG  Em7  Am7  D  G  D7\n\n[Estrofe 1]\n     G      Em7      Am7\n1. Maria do sonho de Deus,\n      D                      G   D7\n   do sonho mais lindo que é seu.\n      G        Em7        Am7\n   Do sonho do povo em clamor:\n        D       D7       G\n   “Que venha Jesus Salvador!”\n\n[Refrão]\n   C                   Am\nR. Sonho lindo, encantador,\n   D7                G\n   esperança, amor e fé.\n   Em    Am          D\n   Sonha Deus libertador\n   Am    D7         G\n   com Jesus de Nazaré!\n\n[Estrofe 2]\n        G         Em7      Am7\n2. A graça do Pai em Maria,\n         D                 G  D7\n   um anjo de Deus anuncia.\n       G          Em7    Am7\n   Ao mundo revela Jesus,\n       D         D7         G\n   o Espírito Santo a conduz.\n\n[Refrão]\n   C                   Am\nR. Sonho lindo, encantador,\n   D7                G\n   esperança, amor e fé.\n   Em    Am          D\n   Sonha Deus libertador\n   Am    D7         G\n   com Jesus de Nazaré!\n\n[Estrofe 3]\n       G         Em7       Am7\n3. A terra que Deus preparou\n        D                   G   D7\n   acolhe este amor que chegou.\n     G           Em7        Am7\n   Sinal que nos vem indicar\n      D          D7          G\n   a casa onde Deus quer morar.\n\n[Refrão Final]\n   C                   Am\nR. Sonho lindo, encantador,\n   D7                G\n   esperança, amor e fé.\n   Em    Am          D\n   Sonha Deus libertador\n   Am    D7         G\n   com Jesus de Nazaré!"
       }
     ]
   },
@@ -629,14 +484,14 @@ const missasReais = {
         "id": "dez-advento3-step3",
         "step": 3,
         "moment": "Acendimento da 3ª Vela do Advento (Antes do Ato Penitencial)",
-        "title": "Uma vela acendemos (3º Domingo)",
-        "author": "Ministério São Miguel Arcanjo | Int.: Márcia Tobias (Cantate)",
+        "title": "Uma vela se acende (3º Domingo)",
+        "author": "Pe. Sérgio Jeremias de Souza",
         "rhythm": "Balada / Canção (4/4)",
         "folhetoLabel": "Igreja em Oração",
-        "tone": "Bb",
+        "tone": "G",
         "duration": 180,
-        "audioFile": "audios/lit-uma-vela-acendemos-3-domingo-ministerio-sa.mp3",
-        "cifra": "[Intro]\nBb  Eb  Bb  Cm  F  Bb\n\n[Estrofe]\n    Bb       Eb            Bb\nUma vela acendemos neste momento,\n             Cm        F        Bb\né a terceira vela da coroa do Advento. (bis)\n\n[Pré-Refrão]\n    F                    Bb\nUma voz que clamava no deserto falou:\n      F                    Bb\n“Preparai os caminhos do Senhor!” (bis)\n\n[Refrão]\n           F               Bb\nVem, vem Jesus, vem, vem Jesus!\n           F              Bb\nQue nos ilumine com a tua luz! (bis)"
+        "audioFile": "audios/lit-uma-vela-se-acende-1-domingo-pe-sergio-jer.mp3",
+        "cifra": "[Intro]\nG  Am  D  D7  G\n\n[Estrofe — 3ª Vela]\nG\nNa terceira vela temos\n                     Am\nA esperança a crepitar\n                   D\nNossa fé se reanima\nD7                 G\nÉ Jesus quem vai chegar\n\n[Refrão]\n      C\nNo Advento a tua vinda\n                   G\nNós queremos preparar\n                          D\nVem, Senhor, que é teu Natal\n        D7           G\nVem nascer em nosso lar"
       },
       {
         "id": "dez-advento3-step4",
@@ -774,14 +629,14 @@ const missasReais = {
         "id": "dez-advento4-step3",
         "step": 3,
         "moment": "Acendimento da 4ª Vela do Advento (Antes do Ato Penitencial)",
-        "title": "Uma vela acendemos (4º Domingo)",
-        "author": "Ministério São Miguel Arcanjo | Int.: Márcia Tobias (Cantate)",
+        "title": "Uma vela se acende (4º Domingo)",
+        "author": "Pe. Sérgio Jeremias de Souza",
         "rhythm": "Balada / Canção (4/4)",
         "folhetoLabel": "Igreja em Oração",
-        "tone": "Bb",
+        "tone": "G",
         "duration": 180,
-        "audioFile": "audios/lit-uma-vela-acendemos-4-domingo-ministerio-sa.mp3",
-        "cifra": "[Intro]\nBb  Eb  Bb  Cm  F  Bb\n\n[Estrofe]\n    Bb       Eb            Bb\nUma vela acendemos neste momento,\n           Cm        F        Bb\né a quarta vela da coroa do Advento. (bis)\n\n[Pré-Refrão]\n    F                    Bb\nUma voz que clamava no deserto falou:\n      F                    Bb\n“Preparai os caminhos do Senhor!” (bis)\n\n[Refrão]\n           F               Bb\nVem, vem Jesus, vem, vem Jesus!\n           F              Bb\nQue nos ilumine com a tua luz! (bis)"
+        "audioFile": "audios/lit-uma-vela-se-acende-1-domingo-pe-sergio-jer.mp3",
+        "cifra": "[Intro]\nG  Am  D  D7  G\n\n[Estrofe — 4ª Vela]\nG\nEis a luz da quarta vela\n                     Am\nUm clarão se faz brilhar\n                   D\nBate forte o coração\nD7                 G\nÉ Jesus quem vai chegar\n\n[Refrão]\n      C\nNo Advento a tua vinda\n                   G\nNós queremos preparar\n                          D\nVem, Senhor, que é teu Natal\n        D7           G\nVem nascer em nosso lar"
       },
       {
         "id": "dez-advento4-step4",

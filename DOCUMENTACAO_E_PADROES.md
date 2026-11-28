@@ -154,7 +154,7 @@ musicas-liturgicas-proto/
 │
 ├── js/
 │   ├── app.js                     # Lógica central: autenticação v2.0 fail-closed, reprodução, transposição, editor de cifras, PDF
-│   ├── dados_reais.js             # Catálogo homologado da Paróquia (Cristo Rei 22/11 até 4º Domingo do Advento 20/12)
+│   ├── dados_reais.js             # Catálogo homologado da Paróquia (1º Domingo do Advento 29/11 até 4º Domingo do Advento 20/12)
 │   └── dados_o_domingo.js         # Catálogo do Folheto "O Domingo" (Paulus)
 │
 ├── index.html                     # Estrutura do App Shell (Login/Cadastro, Hub, Roteiro, Estúdio de Áudio e Palco)
