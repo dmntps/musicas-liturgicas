@@ -82,7 +82,7 @@ const missasReais = {
         "tone": "Gm",
         "duration": 180,
         "audioFile": "audios/lit-aleluia-aleluia-vem-mostrar-nos-o-senhor-l.mp3",
-        "cifra": "[Intro]\nGm  Dm  Gm  F  Gm  Cm  Bb  Cm  Gm\n\n[Refrão]\nGm     Dm        Gm\nS: Aleluia, aleluia!\nGm     F         Gm\nT: Aleluia, aleluia!\n\n[Versículos]\nCm                Bb   Cm\nS: Vem mostrar-nos, ó Senhor!\nCm                Bb   Cm\nT: Vem mostrar-nos, ó Senhor!\nCm      Gm      Dm    Gm\nS: Tua grande salvação!\nCm      Gm      Dm    Gm\nT: Tua grande salvação!\nCm        Gm     Dm   Gm\nS: Dá-nos tua salvação!\nCm        Gm     Dm   Gm\nT: Dá-nos tua salvação!\n\n[Refrão Final]\nGm     Dm        Gm\nS: Aleluia, aleluia!\nGm     F         Gm\nT: Aleluia, aleluia!"
+        "cifra": "[Intro]\nGm  Dm  Gm  F  Gm  Cm  Bb  Cm  Gm\n\n[Refrão]\nGm     Dm        Gm\nS: Aleluia, aleluia!\nGm     F         Gm\nT: Aleluia, aleluia!\n\n[Versículos]\nCm                Bb   Cm\nS: Vem mostrar-nos, ó Senhor!\nCm                Bb   Cm\nT: Vem mostrar-nos, ó Senhor!\nCm      Gm      Dm    Gm\nS: Tua grande compaixão!\nCm      Gm      Dm    Gm\nT: Tua grande compaixão!\nCm        Gm     Dm   Gm\nS: Dá-nos tua salvação!\nCm        Gm     Dm   Gm\nT: Dá-nos tua salvação!\n\n[Refrão Final]\nGm     Dm        Gm\nS: Aleluia, aleluia!\nGm     F         Gm\nT: Aleluia, aleluia!"
       },
       {
         "id": "nov-advento1-step6",
